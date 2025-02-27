@@ -15,6 +15,15 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"; // Ensure this path is correct
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // shadcn Avatar
+import { Separator } from "@/components/ui/separator"; // shadcn Separator
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"; // shadcn Dropdown Menu
+
 // Menu items.
 const items = [
   { title: "Home", url: "#", icon: Home },
@@ -31,7 +40,7 @@ export default function Layout({ children }) {
       <div className="flex h-screen">
         {/* Sidebar */}
         <Sidebar>
-          <SidebarContent>
+          <SidebarContent className="flex flex-col h-full">
             <SidebarGroup>
               <SidebarGroupLabel>Company Dashboard</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -49,6 +58,32 @@ export default function Layout({ children }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            {/* ✅ User Profile Section (shadcn UI) */}
+            <div className="mt-auto p-4">
+              <Separator className="mb-3" /> {/* Divider line */}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center gap-3 cursor-pointer">
+                    <Avatar>
+                      <AvatarImage src="/profile.jpg" alt="User Avatar" />
+                      <AvatarFallback>JD</AvatarFallback> {/* Initials if no image */}
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">John Doe</p>
+                      <p className="text-xs text-gray-500">Admin</p>
+                    </div>
+                  </div>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-500">Logout</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </SidebarContent>
         </Sidebar>
 
