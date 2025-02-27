@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { Home, Inbox, Calendar, Search, Settings } from "lucide-react";
+import { Home, Inbox, Search, Settings, UserRound } from "lucide-react";
 
 import {
   Sidebar,
-  SidebarProvider, // Add this
+  SidebarProvider,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
@@ -20,6 +20,7 @@ const items = [
   { title: "Home", url: "#", icon: Home },
   { title: "Search", url: "#", icon: Search },
   { title: "Inbox", url: "#", icon: Inbox },
+  { title: "Company Profile", url: "#", icon: UserRound },
   { title: "Settings", url: "#", icon: Settings },
 ];
 
@@ -32,7 +33,7 @@ export default function Layout({ children }) {
         <Sidebar>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Application</SidebarGroupLabel>
+              <SidebarGroupLabel>Company Dashboard</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {items.map((item) => (
