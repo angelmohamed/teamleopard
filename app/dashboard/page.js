@@ -1,77 +1,6 @@
-// import React from "react";
-// import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-
-// const jobOffers = [
-//   { title: "Software Engineer", location: "London, UK", hours: 40, salary: "£50,000" },
-//   { title: "Data Analyst", location: "Manchester, UK", hours: 35, salary: "£42,000" },
-//   { title: "UX Designer", location: "Remote", hours: 30, salary: "£38,000" },
-//   { title: "Project Manager", location: "Birmingham, UK", hours: 40, salary: "£55,000" },
-//   { title: "DevOps Engineer", location: "Edinburgh, UK", hours: 37, salary: "£52,000" },
-//   { title: "Product Manager", location: "Liverpool, UK", hours: 40, salary: "£60,000" },
-//   { title: "Frontend Developer", location: "Bristol, UK", hours: 35, salary: "£45,000" },
-//   { title: "Backend Developer", location: "Oxford, UK", hours: 38, salary: "£48,000" }
-// ];
-
-// const appliedJobs = [
-//   { title: "Data Scientist", location: "Glasgow, UK", hours: 37, salary: "£55,000", status: "pending" },
-//   { title: "Network Engineer", location: "Newcastle, UK", hours: 40, salary: "£50,000", status: "rejected" },
-//   { title: "Cybersecurity Analyst", location: "Remote", hours: 36, salary: "£58,000", status: "accepted" },
-//   { title: "QA Engineer", location: "Cardiff, UK", hours: 35, salary: "£46,000", status: "waiting" }
-// ];
-
-// const statusColors = {
-//   pending: "bg-gray-500",
-//   rejected: "bg-red-500",
-//   accepted: "bg-green-500",
-//   waiting: "bg-orange-500"
-// };
-
-// const JobList = () => {
-//   return (
-//     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-//       <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center w-full">Available Job Listings</h2>
-//       <div className="grid grid-cols-4 gap-4 mb-10">
-//         {jobOffers.map((job, index) => (
-//           <Card key={index} className="p-6 shadow-md bg-white">
-//             <CardHeader>
-//               <CardTitle className="text-xl font-semibold text-gray-800">{job.title}</CardTitle>
-//             </CardHeader>
-//             <CardContent>
-//               <p className="text-gray-600"><strong>Location:</strong> {job.location}</p>
-//               <p className="text-gray-600"><strong>Work Hours:</strong> {job.hours} hrs/week</p>
-//               <p className="text-gray-600"><strong>Starting Salary:</strong> {job.salary}</p>
-//             </CardContent>
-//             <CardFooter>
-//               <Button variant="default" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Apply</Button>
-//             </CardFooter>
-//           </Card>
-//         ))}
-//       </div>
-      
-//       <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center w-full">Jobs You've Applied To</h2>
-//       <div className="grid grid-cols-4 gap-4">
-//         {appliedJobs.map((job, index) => (
-//           <Card key={index} className="p-6 shadow-md bg-white border-t-4 {statusColors[job.status]}">
-//             <CardHeader>
-//               <CardTitle className="text-xl font-semibold text-gray-800">{job.title}</CardTitle>
-//             </CardHeader>
-//             <CardContent>
-//               <p className="text-gray-600"><strong>Location:</strong> {job.location}</p>
-//               <p className="text-gray-600"><strong>Work Hours:</strong> {job.hours} hrs/week</p>
-//               <p className="text-gray-600"><strong>Starting Salary:</strong> {job.salary}</p>
-//             </CardContent>
-//             <CardFooter>
-//               <span className={`text-white text-sm px-3 py-1 rounded-md ${statusColors[job.status]}`}>{job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
-//             </CardFooter>
-//           </Card>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
 "use client";
+
+// export default JobList;
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,24 +9,24 @@ import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
 const jobOffers = [
-  { title: "Software Engineer", location: "London, UK", hours: 40, salary: "£50,000", company: "Google", category: "Tech" },
-  { title: "Data Analyst", location: "Manchester, UK", hours: 35, salary: "£42,000", company: "Amazon", category: "Data" },
-  { title: "UX Designer", location: "Remote", hours: 30, salary: "£38,000", company: "Facebook", category: "Design" },
-  { title: "Project Manager", location: "Birmingham, UK", hours: 40, salary: "£55,000", company: "Microsoft", category: "Management" }
+  { title: "Software Engineer", location: "London, UK", hours: 40, salary: "£50,000", company: "Google", category: "Tech", description: "Work on scalable software solutions." },
+  { title: "Data Analyst", location: "Manchester, UK", hours: 35, salary: "£42,000", company: "Amazon", category: "Data", description: "Analyze and visualize complex datasets." },
+  { title: "UX Designer", location: "Remote", hours: 30, salary: "£38,000", company: "Facebook", category: "Design", description: "Design user-friendly interfaces and experiences." },
+  { title: "Project Manager", location: "Birmingham, UK", hours: 40, salary: "£55,000", company: "Microsoft", category: "Management", description: "Lead and coordinate software development teams." }
 ];
 
 const appliedJobs = [
-  { title: "Cybersecurity Analyst", location: "Remote", hours: 36, salary: "£58,000", company: "IBM", status: "pending" },
-  { title: "QA Engineer", location: "Cardiff, UK", hours: 35, salary: "£46,000", company: "Adobe", status: "accepted" },
+  { title: "Cybersecurity Analyst", location: "Remote", hours: 36, salary: "£58,000", company: "IBM", status: "applied" },
+  { title: "QA Engineer", location: "Cardiff, UK", hours: 35, salary: "£46,000", company: "Adobe", status: "interview" },
   { title: "Network Engineer", location: "Newcastle, UK", hours: 40, salary: "£50,000", company: "Cisco", status: "rejected" },
-  { title: "Data Scientist", location: "Glasgow, UK", hours: 37, salary: "£55,000", company: "Tesla", status: "waiting" }
+  { title: "Data Scientist", location: "Glasgow, UK", hours: 37, salary: "£55,000", company: "Tesla", status: "offer" }
 ];
 
 const statusColors = {
-  pending: "bg-gray-500",
-  rejected: "bg-red-500",
-  accepted: "bg-green-500",
-  waiting: "bg-orange-500"
+  applied: "bg-gray-600",
+  interview: "bg-blue-500",
+  rejected: "bg-red-600",
+  offer: "bg-green-600"
 };
 
 const JobList = () => {
@@ -105,47 +34,59 @@ const JobList = () => {
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [darkMode, setDarkMode] = useState(false);
 
+  const filteredJobs = jobOffers.filter(job =>
+    (categoryFilter === "All" || job.category === categoryFilter) &&
+    job.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className={`min-h-screen flex flex-col items-center ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"} p-10 space-y-10`}>
-      <div className="flex items-center space-x-4">
-        <span className="text-lg font-semibold">Dark Mode</span>
-        <Switch checked={darkMode} onCheckedChange={() => setDarkMode(!darkMode)} />
+    <div className={`min-h-screen flex flex-col items-center ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"} p-6 md:p-10 space-y-6 md:space-y-10`}>
+      <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full max-w-4xl border p-4 bg-gray-50 shadow-md rounded-md">
+        <Input type="text" placeholder="Job title, company, or keyword" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="p-3 border rounded-md w-full md:w-1/2" />
+        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="p-3 border rounded-md w-full md:w-1/4">
+          <option value="All">All Categories</option>
+          <option value="Tech">Tech</option>
+          <option value="Data">Data</option>
+          <option value="Design">Design</option>
+          <option value="Management">Management</option>
+        </Select>
+        <div className="flex items-center space-x-2">
+          <span>Dark Mode</span>
+          <Switch checked={darkMode} onCheckedChange={() => setDarkMode(!darkMode)} />
+        </div>
       </div>
-      <h2 className="text-3xl font-bold">Available Job Listings</h2>
-      <div className="grid grid-cols-4 gap-6">
-        {jobOffers.map((job, index) => (
-          <Card key={index} className="p-6 shadow-lg bg-white rounded-xl">
+      <h2 className="text-2xl md:text-3xl font-bold w-full max-w-4xl text-left">Job Offers</h2>
+      <div className="w-full max-w-4xl space-y-4">
+        {filteredJobs.map((job, index) => (
+          <Card key={index} className="p-4 md:p-6 shadow-md bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
             <CardHeader>
-              <CardTitle className="text-xl font-semibold">{job.title}</CardTitle>
+              <CardTitle className="text-lg md:text-xl font-semibold">{job.title}</CardTitle>
+              <p className="text-sm text-gray-500">{job.company} - {job.location}</p>
             </CardHeader>
-            <CardContent>
-              <p><strong>Company:</strong> {job.company}</p>
-              <p><strong>Location:</strong> {job.location}</p>
-              <p><strong>Work Hours:</strong> {job.hours} hrs/week</p>
-              <p><strong>Starting Salary:</strong> {job.salary}</p>
+            <CardContent className="space-y-2">
+              <p className="text-gray-700 text-sm">{job.description}</p>
+              <p className="text-gray-600 text-sm"><strong>Salary:</strong> {job.salary}</p>
+              <p className="text-gray-600 text-sm"><strong>Work Hours:</strong> {job.hours} hrs/week</p>
             </CardContent>
-            <CardFooter>
-              <Button variant="default">Apply</Button>
+            <CardFooter className="flex justify-end">
+              <Button variant="default" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Apply</Button>
             </CardFooter>
           </Card>
         ))}
       </div>
-      <h2 className="text-3xl font-bold mt-10">Jobs You've Applied To</h2>
-      <div className="grid grid-cols-4 gap-6">
+      <h2 className="text-2xl md:text-3xl font-bold w-full max-w-4xl text-left mt-10">Jobs You've Applied To</h2>
+      <div className="w-full max-w-4xl space-y-4">
         {appliedJobs.map((job, index) => (
-          <Card key={index} className={`p-6 shadow-lg bg-white rounded-xl border-t-4 ${statusColors[job.status]}`}> 
+          <Card key={index} className={`p-4 md:p-6 shadow-md rounded-lg border ${statusColors[job.status]} text-white`}> 
             <CardHeader>
-              <CardTitle className="text-xl font-semibold">{job.title}</CardTitle>
+              <CardTitle className="text-lg md:text-xl font-semibold">{job.title}</CardTitle>
+              <p className="text-sm">{job.company} - {job.location}</p>
             </CardHeader>
-            <CardContent>
-              <p><strong>Company:</strong> {job.company}</p>
-              <p><strong>Location:</strong> {job.location}</p>
+            <CardContent className="space-y-2">
+              <p><strong>Salary:</strong> {job.salary}</p>
               <p><strong>Work Hours:</strong> {job.hours} hrs/week</p>
-              <p><strong>Starting Salary:</strong> {job.salary}</p>
+              <p className="font-semibold uppercase">{job.status}</p>
             </CardContent>
-            <CardFooter>
-              <span className={`text-white px-3 py-1 rounded-md ${statusColors[job.status]}`}>{job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
-            </CardFooter>
           </Card>
         ))}
       </div>
