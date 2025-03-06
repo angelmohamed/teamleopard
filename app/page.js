@@ -42,7 +42,7 @@ export default function HomePage() {
                 <Link href="/login">Log In</Link>
               </Button>
               <Button className="text-x1" asChild>
-                <Link href="/sign-up">Register As Employer</Link>
+                <Link href="/companySignup">Register As Employer</Link>
               </Button>
             </ul>
           </nav>

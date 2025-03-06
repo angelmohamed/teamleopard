@@ -1,68 +1,92 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Check, Clock } from "lucide-react";
+import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
 
+const Dashboard = () => {
+  const [employee, setEmployee] = useState(null); // For storing employee data
+  const [username, setUsername] = useState(""); // To store the username
+  const param = useParams();
+  const id = param.id;
 
-const upcomingDeadlines = [
-  { title: "Supply Chain Placement 2025", daysLeft: 2 },
-  { title: "Industrial Placements and Internships London", daysLeft: null },
-  { title: "Data Analyst Placement Ipswich 2025", daysLeft: null },
-];
+  // Fetch employee data when component mounts or id changes
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      const { data, error } = await supabase
+        .from("Employee")
+        .select("username") // Fetch only the username
+        .eq("id", id)
+        .single(); // Assuming you want a single employee
 
+      if (error) {
+        console.error("Error fetching employee:", error);
+      } else {
+        setEmployee(data); // Store entire employee data if needed
+        setUsername(data?.username); // Set the username
+      }
+    };
 
-const myApplications = [
-  { title: "Finance Internship 2025", info: "Interview on Mar 10" },
-  { title: "Marketing Internship 2025", info: "Awaiting response" },
-  { title: "Engineering Placement 2025", info: "Offer received" },
-];
+    if (id) {
+      fetchEmployeeData();
+    }
+  }, [id]);
 
+  const upcomingDeadlines = [
+    { title: "Supply Chain Placement 2025", daysLeft: 2 },
+    { title: "Industrial Placements and Internships London", daysLeft: null },
+    { title: "Data Analyst Placement Ipswich 2025", daysLeft: null },
+  ];
 
-const statusColors = {
-  applied: "bg-gray-200 text-gray-800",
-  interview: "bg-blue-200 text-blue-800",
-  rejected: "bg-red-200 text-red-800",
-  offer: "bg-green-200 text-green-800",
-};
+  const myApplications = [
+    { title: "Finance Internship 2025", info: "Interview on Mar 10" },
+    { title: "Marketing Internship 2025", info: "Awaiting response" },
+    { title: "Engineering Placement 2025", info: "Offer received" },
+  ];
 
-const jobOffers = [
-  { title: "Software Engineer", location: "London, UK", hours: 40, salary: "£50,000", company: "Google", category: "Tech", description: "Work on scalable software solutions." },
-  { title: "Data Analyst", location: "Manchester, UK", hours: 35, salary: "£42,000", company: "Amazon", category: "Data", description: "Analyze and visualize complex datasets." },
-  { title: "UX Designer", location: "Remote", hours: 30, salary: "£38,000", company: "Facebook", category: "Design", description: "Design user-friendly interfaces and experiences." },
-  { title: "Project Manager", location: "Birmingham, UK", hours: 40, salary: "£55,000", company: "Microsoft", category: "Management", description: "Lead and coordinate software development teams." },
-];
+  const statusColors = {
+    applied: "bg-gray-200 text-gray-800",
+    interview: "bg-blue-200 text-blue-800",
+    rejected: "bg-red-200 text-red-800",
+    offer: "bg-green-200 text-green-800",
+  };
 
-const appliedJobs = [
-  { title: "Cybersecurity Analyst", location: "Remote", hours: 36, salary: "£58,000", company: "IBM", status: "applied" },
-  { title: "QA Engineer", location: "Cardiff, UK", hours: 35, salary: "£46,000", company: "Adobe", status: "interview" },
-  { title: "Network Engineer", location: "Newcastle, UK", hours: 40, salary: "£50,000", company: "Cisco", status: "rejected" },
-  { title: "Data Scientist", location: "Glasgow, UK", hours: 37, salary: "£55,000", company: "Tesla", status: "offer" },
-];
+  const jobOffers = [
+    { title: "Software Engineer", location: "London, UK", hours: 40, salary: "£50,000", company: "Google", category: "Tech", description: "Work on scalable software solutions." },
+    { title: "Data Analyst", location: "Manchester, UK", hours: 35, salary: "£42,000", company: "Amazon", category: "Data", description: "Analyze and visualize complex datasets." },
+    { title: "UX Designer", location: "Remote", hours: 30, salary: "£38,000", company: "Facebook", category: "Design", description: "Design user-friendly interfaces and experiences." },
+    { title: "Project Manager", location: "Birmingham, UK", hours: 40, salary: "£55,000", company: "Microsoft", category: "Management", description: "Lead and coordinate software development teams." },
+  ];
 
-// Helper function for application bubbles in "Your applications" box
-function getApplicationInfoClasses(info) {
-  const infoLower = info.toLowerCase();
-  if (infoLower.includes("interview")) {
-    return "bg-blue-200 text-blue-800";
-  } else if (infoLower.includes("awaiting")) {
+  const appliedJobs = [
+    { title: "Cybersecurity Analyst", location: "Remote", hours: 36, salary: "£58,000", company: "IBM", status: "applied" },
+    { title: "QA Engineer", location: "Cardiff, UK", hours: 35, salary: "£46,000", company: "Adobe", status: "interview" },
+    { title: "Network Engineer", location: "Newcastle, UK", hours: 40, salary: "£50,000", company: "Cisco", status: "rejected" },
+    { title: "Data Scientist", location: "Glasgow, UK", hours: 37, salary: "£55,000", company: "Tesla", status: "offer" },
+  ];
+
+  // Helper function for application bubbles in "Your applications" box
+  function getApplicationInfoClasses(info) {
+    const infoLower = info.toLowerCase();
+    if (infoLower.includes("interview")) {
+      return "bg-blue-200 text-blue-800";
+    } else if (infoLower.includes("awaiting")) {
+      return "bg-gray-200 text-gray-800";
+    } else if (infoLower.includes("offer")) {
+      return "bg-green-200 text-green-800";
+    }
     return "bg-gray-200 text-gray-800";
-  } else if (infoLower.includes("offer")) {
-    return "bg-green-200 text-green-800";
   }
-  return "bg-gray-200 text-gray-800";
-}
 
-const JobList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [darkMode, setDarkMode] = useState(false);
 
-  
   const [preferredCategory, setPreferredCategory] = useState("Tech");
   const [preferredLocation, setPreferredLocation] = useState("");
   const [receiveNotifications, setReceiveNotifications] = useState(true);
@@ -79,6 +103,11 @@ const JobList = () => {
         darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       } p-6 md:p-10 space-y-6 md:space-y-10`}
     >
+      {/* TOP SECTION: USERNAME DISPLAY */}
+      <div className="w-full max-w-4xl text-center mb-6">
+        <h1 className="text-2xl font-semibold">Welcome, @{username || "Loading..."}</h1>
+      </div>
+
       {/* TOP SECTION: THREE BOXES */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
         {/* Employee Preferences Box */}
@@ -289,4 +318,4 @@ const JobList = () => {
   );
 };
 
-export default JobList;
+export default Dashboard;

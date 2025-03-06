@@ -38,8 +38,11 @@ export default function EmployeeLogin() {
     if (error || !data) {
       setError("Invalid email or password");
     } else {
-      // Redirect to the employee dashboard on successful login
-      window.location.href = "/dashboard";
+      // Store the employee's id in sessionStorage or localStorage
+      sessionStorage.setItem("employeeId", data.id);
+
+      // Redirect to the employee dashboard with the employee's id in the URL
+      window.location.href = `/dashboard/${data.id}`;
     }
 
     setLoading(false);
