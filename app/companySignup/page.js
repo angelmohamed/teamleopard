@@ -16,15 +16,14 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
-export default function Signup() {
+export default function CompanySignup() {
+  const [username, setUsername] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [companyDescription, setCompanyDescription] = useState("");
+  const [phoneNum, setPhoneNum] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phoneNum, setPhoneNum] = useState("");
-  const [bio, setBio] = useState("");
-  const [username, setUsername] = useState(""); // New state for username
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,50 +40,49 @@ export default function Signup() {
       return;
     }
 
-    try {
-      // Step 1: Insert user data into the Employee table directly
-      const { data, error: insertError } = await supabase
-        .from("Employee")
-        .insert([
-          {
-            email,
-            username, // Save the username
-            first_name: firstName,
-            last_name: lastName,
-            phone_num: phoneNum,
-            bio,
-            password, // Store the password directly
-            created_at: new Date(),
-          },
-        ]);
+    const { error } = await supabase.from("Employer").insert([
+      {
+        username,
+        email,
+        company_name: companyName,
+        company_description: companyDescription,
+        phone_num: phoneNum,
+        password, // Store securely with hashing in a real implementation
+      },
+    ]);
 
-      if (insertError) {
-        setError(insertError.message);
-        setLoading(false);
-        return;
-      }
-
-      setSuccess("Account created successfully.");
-      setLoading(false);
-    } catch (error) {
-      setError("Error creating account.");
-      setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess("Account created successfully!");
     }
+
+    setLoading(false);
   };
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Side - Signup Form */}
       <div className="flex w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-semibold">Sign Up</CardTitle>
+            <CardTitle className="text-2xl font-semibold">Register As Employer</CardTitle>
           </CardHeader>
           <CardContent>
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
             {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4">
+                <div>
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
                 <div>
                   <Label htmlFor="email">E-mail</Label>
                   <Input
@@ -97,35 +95,24 @@ export default function Signup() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="companyName">Company Name</Label>
                   <Input
-                    id="username"
+                    id="companyName"
                     type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Company Name"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="companyDescription">Company Description</Label>
                   <Input
-                    id="firstName"
+                    id="companyDescription"
                     type="text"
-                    placeholder="John"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Doe"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="A short description"
+                    value={companyDescription}
+                    onChange={(e) => setCompanyDescription(e.target.value)}
                     required
                   />
                 </div>
@@ -134,20 +121,9 @@ export default function Signup() {
                   <Input
                     id="phoneNum"
                     type="text"
-                    placeholder="+1234567890"
+                    placeholder="Your phone number"
                     value={phoneNum}
                     onChange={(e) => setPhoneNum(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="bio">Bio</Label>
-                  <Input
-                    id="bio"
-                    type="text"
-                    placeholder="Tell us about yourself"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
                     required
                   />
                 </div>
@@ -182,37 +158,17 @@ export default function Signup() {
                 </Button>
               </div>
             </form>
-
-            {/* Social Login */}
-            <div className="flex items-center my-4">
-              <div className="border-b flex-grow"></div>
-              <p className="mx-3 text-gray-500 text-sm">or sign up with</p>
-              <div className="border-b flex-grow"></div>
-            </div>
-            <div className="flex justify-center space-x-4">
-              <Button variant="outline" size="icon">
-                <FaFacebook className="text-blue-600" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <FaGoogle className="text-red-500" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <FaApple className="text-black" />
-              </Button>
-            </div>
           </CardContent>
           <CardFooter className="text-center">
             <p className="text-sm">
               Already have an account?{" "}
-              <Link href="/login" className="text-blue-600 hover:underline">
+              <Link href="/companyLogin" className="text-blue-600 hover:underline">
                 Log In
               </Link>
             </p>
           </CardFooter>
         </Card>
       </div>
-
-      {/* Right Side - Image Background */}
       <div
         className="hidden md:block w-1/2 bg-cover bg-center"
         style={{

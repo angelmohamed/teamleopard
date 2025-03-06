@@ -16,7 +16,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
-export default function EmployeeLogin() {
+export default function CompanyLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -27,19 +27,26 @@ export default function EmployeeLogin() {
     setLoading(true);
     setError(null);
 
-    // Authenticate using email and password, checking against the Employee table
-    const { data, error } = await supabase
-      .from("Employee") // Ensure the table name is "Employee" in your Supabase schema
+    // Query the Employer table to check the email and password
+    const { data, error: queryError } = await supabase
+      .from("Employer")
       .select("*")
       .eq("email", email)
-      .eq("password", password)
-      .single(); // Fetch only one employee record
+      .single();
 
-    if (error || !data) {
-      setError("Invalid email or password");
+    if (queryError) {
+      setError("An error occurred while fetching the employer data.");
+      setLoading(false);
+      return;
+    }
+
+    // Verify password (assuming the password is stored as plain text for simplicity, ideally you should hash passwords)
+    if (data && data.password === password) {
+      // Set session data or redirect to dashboard
+      // You may store session in cookies or Supabase session if necessary
+      window.location.href = "/company-dashboard";
     } else {
-      // Redirect to the employee dashboard on successful login
-      window.location.href = "/dashboard";
+      setError("Invalid email or password.");
     }
 
     setLoading(false);
@@ -51,7 +58,7 @@ export default function EmployeeLogin() {
       <div className="flex w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-semibold">Log In</CardTitle>
+            <CardTitle className="text-2xl font-semibold">Log In as Employer</CardTitle>
           </CardHeader>
           <CardContent>
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
@@ -92,7 +99,7 @@ export default function EmployeeLogin() {
             {/* Social Login */}
             <div className="flex items-center my-4">
               <div className="border-b flex-grow"></div>
-              <p className="mx-3 text-gray-500 text-sm">or sign in with</p>
+              <p className="mx-3 text-gray-500 text-sm">or sign up with</p>
               <div className="border-b flex-grow"></div>
             </div>
             <div className="flex justify-center space-x-4">
@@ -110,7 +117,7 @@ export default function EmployeeLogin() {
           <CardFooter className="text-center">
             <p className="text-sm">
               Don't have an account?{" "}
-              <Link href="/sign-up" className="text-blue-600 hover:underline">
+              <Link href="/companySignup" className="text-blue-600 hover:underline">
                 Sign Up
               </Link>
             </p>

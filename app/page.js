@@ -28,18 +28,21 @@ import {
 
 export default function HomePage() {
   return (
-    <div>
+    <div className="bg-white">
       {/* NAVBAR ON TOP */}
-      <header className="sticky top-0 z-50 bg-slate-700 bg-opacity-70 text-slate-100 shadow-lg">
+      <header className="sticky top-0 z-50 bg-white text-slate-100 shadow-lg">
         <div className="flex justify-between items-center px-4 py-2">
-          <h1 className="text-xl font-bold">Product of Team Leopard.</h1>
+          <h1 className="text-xl text-black font-bold">Job Seek</h1>
           <nav>
             <ul className="flex space-x-4">
-              <Button className="bg-slate-600 text-x1" asChild>
+              <Button className="text-x1" asChild>
                 <Link href="/sign-up">Sign Up</Link>
               </Button>
-              <Button className="bg-slate-600 text-x1" asChild>
+              <Button className="text-x1" asChild>
                 <Link href="/login">Log In</Link>
+              </Button>
+              <Button className="text-x1" asChild>
+                <Link href="/sign-up">Register As Employer</Link>
               </Button>
             </ul>
           </nav>
@@ -47,8 +50,7 @@ export default function HomePage() {
       </header>
 
       {/* SECTION 1 - START WITH BACKGROUND IMAGE */}
-      <section className="flex justify-center items-center h-[75vh] min-h-[500px] text-white text-4xl font-bold py-6"
-      style={{ backgroundImage: 'url(https://static.vecteezy.com/system/resources/previews/001/255/597/non_2x/blue-white-low-poly-triangle-shapes-background-vector.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <section className="flex justify-center items-center h-[75vh] min-h-[500px] text-white text-4xl font-bold py-6">
         {/* INTRO TEXT AND BUTTON */}
         <div className="w-1/2 flex flex-col items-center justify-left text-right px-10 gap-6">
           <h1 className="text-black text-6xl font-bold self-end mr-5">Name of the app or something.</h1>
@@ -143,7 +145,7 @@ export default function HomePage() {
       </div>
 
       {/* SECTION 3 - WHY CHOOSE US + STATS */}
-      <section className="bg-slate-200 flex justify-center items-center h-[75vh] min-h-[500px] text-white text-4xl font-bold py-6">
+      <section className="bg-white flex justify-center items-center h-[75vh] min-h-[500px] text-black text-4xl font-bold py-6">
         WIP
       </section>
 
