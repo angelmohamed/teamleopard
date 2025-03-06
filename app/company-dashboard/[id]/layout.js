@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Home, Inbox, Search, Settings, UserRound } from "lucide-react";
+import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
 
 import {
   Sidebar,
@@ -34,6 +36,37 @@ const items = [
 ];
 
 export default function Layout({ children }) {
+  const [company, setCompany] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state
+  const param = useParams();
+  const id = param.id; // Get the company ID from the URL
+
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      try {
+        // Fetch company data from the "Employer" table
+        const { data, error } = await supabase
+          .from("Employer") // Replace with the actual table name
+          .select("company_name") // Columns you need
+          .eq("id", id) // Use the id from the URL params
+          .single(); // Get a single result (assuming id is unique)
+
+        if (error) {
+          throw error;
+        }
+        setCompany(data); // Set company data if fetch is successful
+      } catch (error) {
+        console.error("Error fetching company data:", error.message);
+      } finally {
+        setLoading(false); // Set loading to false after fetching data
+      }
+    };
+
+    if (id) {
+      fetchCompanyData();
+    }
+  }, [id]);
+
   return (
     <SidebarProvider>
       {/* ✅ Wrap Sidebar + Page Content in the same flex container */}
@@ -71,8 +104,15 @@ export default function Layout({ children }) {
                       <AvatarFallback>JD</AvatarFallback> {/* Initials if no image */}
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">John Doe</p>
-                      <p className="text-xs text-gray-500">Admin</p>
+                      {/* Check if the company is loading */}
+                      {loading ? (
+                        <p>Loading...</p> // Show loading text while fetching
+                      ) : (
+                        <div>
+                          <p className="text-sm font-medium">{company?.company_name}</p>
+                          <p className="text-xs text-gray-500">Admin</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </DropdownMenuTrigger>

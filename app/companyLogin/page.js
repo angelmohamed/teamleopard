@@ -42,9 +42,8 @@ export default function CompanyLogin() {
 
     // Verify password (assuming the password is stored as plain text for simplicity, ideally you should hash passwords)
     if (data && data.password === password) {
-      // Set session data or redirect to dashboard
-      // You may store session in cookies or Supabase session if necessary
-      window.location.href = "/company-dashboard";
+      // Set session data or redirect to the dashboard with employer's id
+      window.location.href = `/company-dashboard/${data.id}`; // Pass the employer's ID in the URL
     } else {
       setError("Invalid email or password.");
     }
