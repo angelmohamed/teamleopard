@@ -24,7 +24,7 @@ export default function Signup() {
   const [lastName, setLastName] = useState("");
   const [phoneNum, setPhoneNum] = useState("");
   const [bio, setBio] = useState("");
-  const [username, setUsername] = useState(""); // New state for username
+  const [username, setUsername] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -73,16 +73,18 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-row min-h-screen">
       {/* Left Side - Signup Form */}
-      <div className="flex w-1/2 justify-center items-center bg-white p-10">
+      <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-semibold">Sign Up</CardTitle>
           </CardHeader>
           <CardContent>
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-            {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
+            {success && (
+              <p className="text-green-600 text-sm mb-2">{success}</p>
+            )}
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4">
                 <div>
@@ -112,7 +114,7 @@ export default function Signup() {
                   <Input
                     id="firstName"
                     type="text"
-                    placeholder="John"
+                    placeholder="Jane"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
@@ -134,7 +136,7 @@ export default function Signup() {
                   <Input
                     id="phoneNum"
                     type="text"
-                    placeholder="+1234567890"
+                    placeholder="+(555) 555-1234"
                     value={phoneNum}
                     onChange={(e) => setPhoneNum(e.target.value)}
                     required
@@ -186,7 +188,7 @@ export default function Signup() {
             {/* Social Login */}
             <div className="flex items-center my-4">
               <div className="border-b flex-grow"></div>
-              <p className="mx-3 text-gray-500 text-sm">or sign up with</p>
+              <p className="mx-3 text-gray-500 text-sm">Or sign up with</p>
               <div className="border-b flex-grow"></div>
             </div>
             <div className="flex justify-center space-x-4">
@@ -212,12 +214,10 @@ export default function Signup() {
         </Card>
       </div>
 
-      {/* Right Side - Image Background */}
+      {/* Right Side - Image Background (Hidden Below md) */}
       <div
-        className="hidden md:block w-1/2 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/sign_up_bg.jpg')",
-        }}
+        className="hidden md:block md:w-1/2 bg-cover bg-center"
+        style={{ backgroundImage: "url('/sign_up_bg.jpg')" }}
       ></div>
     </div>
   );

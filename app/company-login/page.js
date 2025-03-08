@@ -52,12 +52,14 @@ export default function CompanyLogin() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-row min-h-screen">
       {/* Left Side - Login Form */}
-      <div className="flex w-1/2 justify-center items-center bg-white p-10">
+      <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-semibold">Log In as Employer</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              Log In as Employer
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
@@ -115,8 +117,11 @@ export default function CompanyLogin() {
           </CardContent>
           <CardFooter className="text-center">
             <p className="text-sm">
-              Don't have an account?{" "}
-              <Link href="/companySignup" className="text-blue-600 hover:underline">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/company-sign-up"
+                className="text-blue-600 hover:underline"
+              >
                 Sign Up
               </Link>
             </p>
@@ -126,7 +131,7 @@ export default function CompanyLogin() {
 
       {/* Right Side - Image Background */}
       <div
-        className="hidden md:block w-1/2 bg-cover bg-center"
+        className="hidden md:block md:w-1/2 bg-cover bg-center"
         style={{
           backgroundImage: "url('/login_image.jpg')",
         }}

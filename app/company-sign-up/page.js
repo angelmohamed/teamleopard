@@ -61,15 +61,20 @@ export default function CompanySignup() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex w-1/2 justify-center items-center bg-white p-10">
+    <div className="flex flex-row min-h-screen">
+      {/* Left Side - Employer Signup Form */}
+      <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-semibold">Register As Employer</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              Register As Employer
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-            {success && <p className="text-green-600 text-sm mb-2">{success}</p>}
+            {success && (
+              <p className="text-green-600 text-sm mb-2">{success}</p>
+            )}
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4">
                 <div>
@@ -106,7 +111,9 @@ export default function CompanySignup() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="companyDescription">Company Description</Label>
+                  <Label htmlFor="companyDescription">
+                    Company Description
+                  </Label>
                   <Input
                     id="companyDescription"
                     type="text"
@@ -121,7 +128,7 @@ export default function CompanySignup() {
                   <Input
                     id="phoneNum"
                     type="text"
-                    placeholder="Your phone number"
+                    placeholder="Enter your phone number (e.g., +44 7423 489150)"
                     value={phoneNum}
                     onChange={(e) => setPhoneNum(e.target.value)}
                     required
@@ -162,18 +169,21 @@ export default function CompanySignup() {
           <CardFooter className="text-center">
             <p className="text-sm">
               Already have an account?{" "}
-              <Link href="/companyLogin" className="text-blue-600 hover:underline">
+              <Link
+                href="/companyLogin"
+                className="text-blue-600 hover:underline"
+              >
                 Log In
               </Link>
             </p>
           </CardFooter>
         </Card>
       </div>
+
+      {/* Right Side - Image Background (Hidden Below md) */}
       <div
-        className="hidden md:block w-1/2 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/sign_up_bg.jpg')",
-        }}
+        className="hidden md:block md:w-1/2 bg-cover bg-center"
+        style={{ backgroundImage: "url('/sign_up_bg.jpg')" }}
       ></div>
     </div>
   );

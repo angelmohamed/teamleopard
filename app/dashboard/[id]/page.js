@@ -1,6 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -57,17 +63,77 @@ const Dashboard = () => {
   };
 
   const jobOffers = [
-    { title: "Software Engineer", location: "London, UK", hours: 40, salary: "£50,000", company: "Google", category: "Tech", description: "Work on scalable software solutions." },
-    { title: "Data Analyst", location: "Manchester, UK", hours: 35, salary: "£42,000", company: "Amazon", category: "Data", description: "Analyze and visualize complex datasets." },
-    { title: "UX Designer", location: "Remote", hours: 30, salary: "£38,000", company: "Facebook", category: "Design", description: "Design user-friendly interfaces and experiences." },
-    { title: "Project Manager", location: "Birmingham, UK", hours: 40, salary: "£55,000", company: "Microsoft", category: "Management", description: "Lead and coordinate software development teams." },
+    {
+      title: "Software Engineer",
+      location: "London, UK",
+      hours: 40,
+      salary: "£50,000",
+      company: "Google",
+      category: "Tech",
+      description: "Work on scalable software solutions.",
+    },
+    {
+      title: "Data Analyst",
+      location: "Manchester, UK",
+      hours: 35,
+      salary: "£42,000",
+      company: "Amazon",
+      category: "Data",
+      description: "Analyze and visualize complex datasets.",
+    },
+    {
+      title: "UX Designer",
+      location: "Remote",
+      hours: 30,
+      salary: "£38,000",
+      company: "Facebook",
+      category: "Design",
+      description: "Design user-friendly interfaces and experiences.",
+    },
+    {
+      title: "Project Manager",
+      location: "Birmingham, UK",
+      hours: 40,
+      salary: "£55,000",
+      company: "Microsoft",
+      category: "Management",
+      description: "Lead and coordinate software development teams.",
+    },
   ];
 
   const appliedJobs = [
-    { title: "Cybersecurity Analyst", location: "Remote", hours: 36, salary: "£58,000", company: "IBM", status: "applied" },
-    { title: "QA Engineer", location: "Cardiff, UK", hours: 35, salary: "£46,000", company: "Adobe", status: "interview" },
-    { title: "Network Engineer", location: "Newcastle, UK", hours: 40, salary: "£50,000", company: "Cisco", status: "rejected" },
-    { title: "Data Scientist", location: "Glasgow, UK", hours: 37, salary: "£55,000", company: "Tesla", status: "offer" },
+    {
+      title: "Cybersecurity Analyst",
+      location: "Remote",
+      hours: 36,
+      salary: "£58,000",
+      company: "IBM",
+      status: "applied",
+    },
+    {
+      title: "QA Engineer",
+      location: "Cardiff, UK",
+      hours: 35,
+      salary: "£46,000",
+      company: "Adobe",
+      status: "interview",
+    },
+    {
+      title: "Network Engineer",
+      location: "Newcastle, UK",
+      hours: 40,
+      salary: "£50,000",
+      company: "Cisco",
+      status: "rejected",
+    },
+    {
+      title: "Data Scientist",
+      location: "Glasgow, UK",
+      hours: 37,
+      salary: "£55,000",
+      company: "Tesla",
+      status: "offer",
+    },
   ];
 
   // Helper function for application bubbles in "Your applications" box
@@ -105,7 +171,9 @@ const Dashboard = () => {
     >
       {/* TOP SECTION: USERNAME DISPLAY */}
       <div className="w-full max-w-4xl text-center mb-6">
-        <h1 className="text-2xl font-semibold">Welcome, @{username || "Loading..."}</h1>
+        <h1 className="text-2xl font-semibold">
+          Welcome, @{username || "Loading..."}
+        </h1>
       </div>
 
       {/* TOP SECTION: THREE BOXES */}
@@ -142,10 +210,14 @@ const Dashboard = () => {
               />
             </div>
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">Receive Notifications</label>
+              <label className="text-sm font-medium">
+                Receive Notifications
+              </label>
               <Switch
                 checked={receiveNotifications}
-                onCheckedChange={() => setReceiveNotifications(!receiveNotifications)}
+                onCheckedChange={() =>
+                  setReceiveNotifications(!receiveNotifications)
+                }
               />
             </div>
           </CardContent>
@@ -171,9 +243,7 @@ const Dashboard = () => {
                   key={index}
                   className="flex items-center justify-between p-2 border rounded-md"
                 >
-                  <div className="text-sm font-medium">
-                    {deadline.title}
-                  </div>
+                  <div className="text-sm font-medium">{deadline.title}</div>
                   <div className="flex items-center space-x-2">
                     {isRolling ? (
                       <span className="bg-gray-200 text-gray-800 text-xs py-1 px-2 rounded-full">
@@ -209,7 +279,9 @@ const Dashboard = () => {
                   className="flex items-center justify-between p-2 border rounded-md"
                 >
                   <div className="text-sm font-medium">{app.title}</div>
-                  <div className={`text-xs px-2 py-1 rounded-full ${colorClasses}`}>
+                  <div
+                    className={`text-xs px-2 py-1 rounded-full ${colorClasses}`}
+                  >
                     {app.info}
                   </div>
                 </div>
@@ -241,7 +313,10 @@ const Dashboard = () => {
         </Select>
         <div className="flex items-center space-x-2">
           <span>Dark Mode</span>
-          <Switch checked={darkMode} onCheckedChange={() => setDarkMode(!darkMode)} />
+          <Switch
+            checked={darkMode}
+            onCheckedChange={() => setDarkMode(!darkMode)}
+          />
         </div>
       </div>
 
@@ -292,7 +367,9 @@ const Dashboard = () => {
         {appliedJobs.map((job, index) => (
           <Card
             key={index}
-            className={`p-4 md:p-6 shadow-md rounded-lg border ${statusColors[job.status]} `}
+            className={`p-4 md:p-6 shadow-md rounded-lg border ${
+              statusColors[job.status]
+            } `}
           >
             <CardHeader>
               <CardTitle className="text-lg md:text-xl font-semibold">
