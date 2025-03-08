@@ -1,4 +1,3 @@
-// app/layout.js
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -14,16 +13,15 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: "Job App",
-  description: "A Web App for Finding Jobs and Hiring Employees",
+  title: "Look for jobs now | Connect",
+  description: "A Web App for Posting and Applying for Jobs",
+  icons: "/favicon.ico",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
-        {children}
-      </body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

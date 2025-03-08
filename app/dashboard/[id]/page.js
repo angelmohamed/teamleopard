@@ -1,21 +1,21 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Check, Clock } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Filter } from "lucide-react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
+import { supabase } from "@/lib/supabaseClient";
 
-const Dashboard = () => {
+export default function JobListings() {
   const [employee, setEmployee] = useState(null); // For storing employee data
   const [username, setUsername] = useState(""); // To store the username
   const param = useParams();
@@ -43,356 +43,233 @@ const Dashboard = () => {
     }
   }, [id]);
 
-  const upcomingDeadlines = [
-    { title: "Supply Chain Placement 2025", daysLeft: 2 },
-    { title: "Industrial Placements and Internships London", daysLeft: null },
-    { title: "Data Analyst Placement Ipswich 2025", daysLeft: null },
-  ];
+  const [filters, setFilters] = useState({
+    location: "",
+    employmentType: "",
+    employer: "",
+    sector: "",
+    jobType: "",
+  });
 
-  const myApplications = [
-    { title: "Finance Internship 2025", info: "Interview on Mar 10" },
-    { title: "Marketing Internship 2025", info: "Awaiting response" },
-    { title: "Engineering Placement 2025", info: "Offer received" },
-  ];
-
-  const statusColors = {
-    applied: "bg-gray-200 text-gray-800",
-    interview: "bg-blue-200 text-blue-800",
-    rejected: "bg-red-200 text-red-800",
-    offer: "bg-green-200 text-green-800",
+  // Update filter values
+  const updateFilter = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const jobOffers = [
-    {
-      title: "Software Engineer",
-      location: "London, UK",
-      hours: 40,
-      salary: "£50,000",
-      company: "Google",
-      category: "Tech",
-      description: "Work on scalable software solutions.",
-    },
-    {
-      title: "Data Analyst",
-      location: "Manchester, UK",
-      hours: 35,
-      salary: "£42,000",
-      company: "Amazon",
-      category: "Data",
-      description: "Analyze and visualize complex datasets.",
-    },
-    {
-      title: "UX Designer",
-      location: "Remote",
-      hours: 30,
-      salary: "£38,000",
-      company: "Facebook",
-      category: "Design",
-      description: "Design user-friendly interfaces and experiences.",
-    },
-    {
-      title: "Project Manager",
-      location: "Birmingham, UK",
-      hours: 40,
-      salary: "£55,000",
-      company: "Microsoft",
-      category: "Management",
-      description: "Lead and coordinate software development teams.",
-    },
-  ];
-
-  const appliedJobs = [
-    {
-      title: "Cybersecurity Analyst",
-      location: "Remote",
-      hours: 36,
-      salary: "£58,000",
-      company: "IBM",
-      status: "applied",
-    },
-    {
-      title: "QA Engineer",
-      location: "Cardiff, UK",
-      hours: 35,
-      salary: "£46,000",
-      company: "Adobe",
-      status: "interview",
-    },
-    {
-      title: "Network Engineer",
-      location: "Newcastle, UK",
-      hours: 40,
-      salary: "£50,000",
-      company: "Cisco",
-      status: "rejected",
-    },
-    {
-      title: "Data Scientist",
-      location: "Glasgow, UK",
-      hours: 37,
-      salary: "£55,000",
-      company: "Tesla",
-      status: "offer",
-    },
-  ];
-
-  // Helper function for application bubbles in "Your applications" box
-  function getApplicationInfoClasses(info) {
-    const infoLower = info.toLowerCase();
-    if (infoLower.includes("interview")) {
-      return "bg-blue-200 text-blue-800";
-    } else if (infoLower.includes("awaiting")) {
-      return "bg-gray-200 text-gray-800";
-    } else if (infoLower.includes("offer")) {
-      return "bg-green-200 text-green-800";
-    }
-    return "bg-gray-200 text-gray-800";
-  }
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
-  const [darkMode, setDarkMode] = useState(false);
-
-  const [preferredCategory, setPreferredCategory] = useState("Tech");
-  const [preferredLocation, setPreferredLocation] = useState("");
-  const [receiveNotifications, setReceiveNotifications] = useState(true);
-
-  const filteredJobs = jobOffers.filter(
-    (job) =>
-      (categoryFilter === "All" || job.category === categoryFilter) &&
-      job.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div
-      className={`min-h-screen flex flex-col items-center ${
-        darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      } p-6 md:p-10 space-y-6 md:space-y-10`}
-    >
-      {/* TOP SECTION: USERNAME DISPLAY */}
-      <div className="w-full max-w-4xl text-center mb-6">
-        <h1 className="text-2xl font-semibold">
-          Welcome, @{username || "Loading..."}
-        </h1>
-      </div>
+    <div className="min-h-screen flex justify-center">
+      {/* Main Layout Container with Max Width */}
+      <div className="w-full max-w-6xl flex">
+        {/* Sidebar - Hidden on mobile, shown on md+ */}
+        <aside className="hidden md:block w-1/4 p-6">
+          <h2 className="text-lg font-semibold mb-4">Filters</h2>
+          <Button variant="link" className="text-red-500 p-0 mb-2">
+            Clear all filters
+          </Button>
 
-      {/* TOP SECTION: THREE BOXES */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
-        {/* Employee Preferences Box */}
-        <Card className="p-4">
-          <CardHeader>
-            <CardTitle>Employee Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Preferred Category
-              </label>
-              <Select
-                value={preferredCategory}
-                onChange={(e) => setPreferredCategory(e.target.value)}
-              >
-                <option value="Tech">Tech</option>
-                <option value="Data">Data</option>
-                <option value="Design">Design</option>
-                <option value="Management">Management</option>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Preferred Location
-              </label>
-              <Input
-                type="text"
-                placeholder="Enter location"
-                value={preferredLocation}
-                onChange={(e) => setPreferredLocation(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">
-                Receive Notifications
-              </label>
-              <Switch
-                checked={receiveNotifications}
-                onCheckedChange={() =>
-                  setReceiveNotifications(!receiveNotifications)
-                }
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Update Preferences</Button>
-          </CardFooter>
-        </Card>
+          <Accordion type="single" collapsible>
+            {/* Content Types */}
+            <AccordionItem value="contentTypes" className="border-b">
+              <AccordionTrigger className="text-sm font-medium">
+                Content Types
+              </AccordionTrigger>
+              <AccordionContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="all"
+                      defaultChecked
+                      className="mr-2"
+                    />
+                    All
+                  </li>
+                  <li className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="jobs"
+                      className="mr-2"
+                    />
+                    Jobs (3577)
+                  </li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
 
-        {/* Your Upcoming Deadlines (Vertical List) */}
-        <Card className="p-4">
-          <CardHeader>
-            <CardTitle>Your upcoming deadlines</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {upcomingDeadlines.map((deadline, index) => {
-              const isRolling = deadline.daysLeft === null;
-              const labelText = isRolling
-                ? "Rolling deadline"
-                : `${deadline.daysLeft} days left`;
+            {/* Sectors */}
+            <AccordionItem value="sectors" className="border-b">
+              <AccordionTrigger className="text-sm font-medium">
+                Sectors
+              </AccordionTrigger>
+              <AccordionContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-center">
+                    <input
+                      type="radio"
+                      name="sector"
+                      value="all"
+                      defaultChecked
+                      className="mr-2"
+                    />
+                    All
+                  </li>
+                  <li className="flex items-center">
+                    <input
+                      type="radio"
+                      name="sector"
+                      value="tech"
+                      className="mr-2"
+                    />
+                    Technology & IT
+                  </li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
 
-              return (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 border rounded-md"
+            {/* Employers */}
+            <AccordionItem value="employers" className="border-b">
+              <AccordionTrigger className="text-sm font-medium">
+                Employers
+              </AccordionTrigger>
+              <AccordionContent>
+                <Input
+                  placeholder="Search employer"
+                  value={filters.employer}
+                  onChange={(e) => updateFilter("employer", e.target.value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Locations */}
+            <AccordionItem value="locations" className="border-b">
+              <AccordionTrigger className="text-sm font-medium">
+                Locations
+              </AccordionTrigger>
+              <AccordionContent>
+                <Input
+                  placeholder="Enter a location"
+                  value={filters.location}
+                  onChange={(e) => updateFilter("location", e.target.value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Job Types */}
+            <AccordionItem value="jobTypes" className="border-b">
+              <AccordionTrigger className="text-sm font-medium">
+                Job Types
+              </AccordionTrigger>
+              <AccordionContent>
+                <Select
+                  onValueChange={(value) => updateFilter("jobType", value)}
                 >
-                  <div className="text-sm font-medium">{deadline.title}</div>
-                  <div className="flex items-center space-x-2">
-                    {isRolling ? (
-                      <span className="bg-gray-200 text-gray-800 text-xs py-1 px-2 rounded-full">
-                        {labelText}
-                      </span>
-                    ) : (
-                      <div className="flex items-center space-x-1 text-blue-800 text-sm">
-                        <Clock className="w-4 h-4" />
-                        <span>{labelText}</span>
-                      </div>
-                    )}
-                    <Button variant="outline" size="sm">
-                      <Check className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+                  <option value="">Select job type</option>
+                  <option value="graduate">Graduate</option>
+                  <option value="placement">Placement</option>
+                  <option value="internship">Internship</option>
+                </Select>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
-        {/* Your Applications (Vertical List with color-coded bubbles) */}
-        <Card className="p-4">
-          <CardHeader>
-            <CardTitle>Your applications</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {myApplications.map((app, index) => {
-              const colorClasses = getApplicationInfoClasses(app.info);
-              return (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 border rounded-md"
+          <Button variant="default" className="w-full mt-4">
+            Apply Filters
+          </Button>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          {/* Mobile Filter Button */}
+          <div className="md:hidden mb-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex items-center space-x-2"
                 >
-                  <div className="text-sm font-medium">{app.title}</div>
-                  <div
-                    className={`text-xs px-2 py-1 rounded-full ${colorClasses}`}
-                  >
-                    {app.info}
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </div>
+                  <Filter className="w-5 h-5" />
+                  <span>Filters</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Filters</h2>
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="contentTypes" className="border-b">
+                    <AccordionTrigger className="text-sm font-medium">
+                      Content Types
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-2 text-sm text-gray-700">
+                        <li className="flex items-center">
+                          <input
+                            type="radio"
+                            name="contentType"
+                            value="all"
+                            defaultChecked
+                            className="mr-2"
+                          />
+                          All
+                        </li>
+                        <li className="flex items-center">
+                          <input
+                            type="radio"
+                            name="contentType"
+                            value="jobs"
+                            className="mr-2"
+                          />
+                          Jobs (3577)
+                        </li>
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
 
-      {/* EXISTING SEARCH / FILTER BAR */}
-      <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full max-w-4xl border p-4 bg-gray-50 shadow-md rounded-md">
-        <Input
-          type="text"
-          placeholder="Job title, company, or keyword"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-3 border rounded-md w-full md:w-1/2"
-        />
-        <Select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="p-3 border rounded-md w-full md:w-1/4"
-        >
-          <option value="All">All Categories</option>
-          <option value="Tech">Tech</option>
-          <option value="Data">Data</option>
-          <option value="Design">Design</option>
-          <option value="Management">Management</option>
-        </Select>
-        <div className="flex items-center space-x-2">
-          <span>Dark Mode</span>
-          <Switch
-            checked={darkMode}
-            onCheckedChange={() => setDarkMode(!darkMode)}
-          />
-        </div>
-      </div>
+                <Button variant="default" className="w-full mt-4">
+                  Apply Filters
+                </Button>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-      {/* JOB OFFERS SECTION */}
-      <h2 className="text-2xl md:text-3xl font-bold w-full max-w-4xl text-left">
-        Job Offers
-      </h2>
-      <div className="w-full max-w-4xl space-y-4">
-        {filteredJobs.map((job, index) => (
-          <Card
-            key={index}
-            className="p-4 md:p-6 shadow-md bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all cursor-pointer"
-          >
-            <CardHeader>
-              <CardTitle className="text-lg md:text-xl font-semibold">
-                {job.title}
-              </CardTitle>
-              <p className="text-sm text-gray-500">
-                {job.company} - {job.location}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-gray-700 text-sm">{job.description}</p>
-              <p className="text-gray-600 text-sm">
-                <strong>Salary:</strong> {job.salary}
-              </p>
-              <p className="text-gray-600 text-sm">
-                <strong>Work Hours:</strong> {job.hours} hrs/week
-              </p>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button
-                variant="default"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Apply
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+          {/* Groupmate's Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Employee Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Your profile</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Welcome, @{username || "Loading..."}</p>
+              </CardContent>
+            </Card>
 
-      {/* JOBS YOU'VE APPLIED TO SECTION */}
-      <h2 className="text-2xl md:text-3xl font-bold w-full max-w-4xl text-left mt-10">
-        Jobs {"you've"} applied to
-      </h2>
-      <div className="w-full max-w-4xl space-y-4">
-        {appliedJobs.map((job, index) => (
-          <Card
-            key={index}
-            className={`p-4 md:p-6 shadow-md rounded-lg border ${
-              statusColors[job.status]
-            } `}
-          >
-            <CardHeader>
-              <CardTitle className="text-lg md:text-xl font-semibold">
-                {job.title}
-              </CardTitle>
-              <p className="text-sm">
-                {job.company} - {job.location}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p>
-                <strong>Salary:</strong> {job.salary}
-              </p>
-              <p>
-                <strong>Work Hours:</strong> {job.hours} hrs/week
-              </p>
-              <p className="font-semibold uppercase">{job.status}</p>
-            </CardContent>
-          </Card>
-        ))}
+            {/* Upcoming Deadlines */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Your upcoming deadlines</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Placeholder</p>
+              </CardContent>
+            </Card>
+
+            {/* Applications */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Your applications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Placeholder</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Divider */}
+          <div className="border-b my-6"></div>
+        </main>
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
