@@ -13,8 +13,9 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: "Job App",
-  description: "A Web App for Finding Jobs and Hiring Employees",
+  title: "Look for jobs now | Connect",
+  description: "A Web App for Posting and Applying for Jobs",
+  icons: "/favicon.ico",
 };
 
 export default function RootLayout({ children }) {
