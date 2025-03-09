@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
-
 export default function CompanyDashboard() {
   const [expanded, setExpanded] = useState(false);
   const [company, setCompany] = useState(null);
@@ -26,6 +25,7 @@ export default function CompanyDashboard() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [jobListings, setJobListings] = useState([]); // State for job listings
   const param = useParams();
   const id = param.id; // Get the company ID from the URL
 
@@ -54,6 +54,7 @@ export default function CompanyDashboard() {
       setError(error.message);
     } else {
       setSuccess("Job listing created successfully!");
+      fetchJobListings(); // Fetch job listings again to update the list
     }
 
     setLoading(false);
@@ -81,6 +82,30 @@ export default function CompanyDashboard() {
 
     if (id) {
       fetchCompanyData();
+    }
+  }, [id]);
+
+  // Fetch job listings for the company
+  const fetchJobListings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("Job_Posting")
+        .select("*")
+        .eq("company_ID", id)
+        .order("posted_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      setJobListings(data);
+    } catch (error) {
+      console.error("Error fetching job listings:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchJobListings();
     }
   }, [id]);
 
@@ -114,11 +139,13 @@ export default function CompanyDashboard() {
                 <p className="text-sm text-gray-500">Avg Time to Fill Position</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">245</p>
+                <p className="text-2xl font-bold">{jobListings.length}</p>
                 <p className="text-sm text-gray-500">Total Job Listings</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">7</p>
+                <p className="text-2xl font-bold">
+                  {jobListings.filter((job) => job.status === "active").length}
+                </p>
                 <p className="text-sm text-gray-500">Active Job Listings</p>
               </div>
               <div className="text-center">
@@ -243,7 +270,12 @@ export default function CompanyDashboard() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-500 mb-4">{company.company_description}</p> {/* Using company_description */}
-              <button className="w-full bg-blue-500 text-white py-2 rounded-md">Update Profile</button>
+              <Button 
+                className="w-full bg-blue-500 text-white py-2 rounded-md"
+                onClick={() => window.location.href=`/company-dashboard/${id}/edit-profile`}
+              >
+                Update Profile
+              </Button>
             </CardContent>
           </Card>
 
