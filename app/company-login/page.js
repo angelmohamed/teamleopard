@@ -1,7 +1,7 @@
 "use client";
 
 import "../globals.css";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -16,65 +16,50 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
-export default function EmployerLogin() {
+export default function CompanyLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [captcha, setCaptcha] = useState("");
-  const [captchaText, setCaptchaText] = useState("");
-  const [captchaImage, setCaptchaImage] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // Fetch CAPTCHA when the component loads
-  const fetchCaptcha = async () => {
-    const res = await fetch("/api/captcha");
-    const data = await res.json();
-    setCaptchaImage(data.svg);
-    setCaptchaText(data.text);
-  };
-
-  useEffect(() => {
-    fetchCaptcha();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Validate CAPTCHA
-    if (captcha !== captchaText) {
-      setError("Incorrect CAPTCHA. Please try again.");
-      fetchCaptcha(); // Refresh CAPTCHA on failure
+    // Query the Employer table to check the email and password
+    const { data, error: queryError } = await supabase
+      .from("Employer")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (queryError) {
+      setError("An error occurred while fetching the employer data.");
       setLoading(false);
       return;
     }
 
-    // Authenticate user using Supabase
-    const { data, error } = await supabase
-      .from("Employer")
-      .select("*")
-      .eq("email", email)
-      .eq("password", password)
-      .single();
-
-    if (error || !data) {
-      setError("Invalid email or password");
+    // Verify password (assuming the password is stored as plain text for simplicity, ideally you should hash passwords)
+    if (data && data.password === password) {
+      // Set session data or redirect to the dashboard with employer's id
+      window.location.href = `/company-dashboard/${data.id}`; // Pass the employer's ID in the URL
     } else {
-      sessionStorage.setItem("employerId", data.id);
-      window.location.href = `/dashboard/${data.id}`;
+      setError("Invalid email or password.");
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-row min-h-screen">
       {/* Left Side - Login Form */}
-      <div className="flex w-1/2 justify-center items-center bg-white p-10">
+      <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-semibold">Log In</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              Log In as Employer
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
@@ -102,28 +87,6 @@ export default function EmployerLogin() {
                     required
                   />
                 </div>
-
-                {/* CAPTCHA Section */}
-                <div className="flex flex-col items-center">
-                  <Label>Enter the code shown below:</Label>
-                  <div dangerouslySetInnerHTML={{ __html: captchaImage }} />
-                  <Input
-                    id="captcha"
-                    type="text"
-                    placeholder="Enter CAPTCHA"
-                    value={captcha}
-                    onChange={(e) => setCaptcha(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="text-blue-600 text-sm mt-1"
-                    onClick={fetchCaptcha}
-                  >
-                    Refresh CAPTCHA
-                  </button>
-                </div>
-
                 <Button
                   className="w-full bg-blue-600 hover:bg-blue-700"
                   type="submit"
@@ -137,7 +100,7 @@ export default function EmployerLogin() {
             {/* Social Login */}
             <div className="flex items-center my-4">
               <div className="border-b flex-grow"></div>
-              <p className="mx-3 text-gray-500 text-sm">or sign in with</p>
+              <p className="mx-3 text-gray-500 text-sm">or sign up with</p>
               <div className="border-b flex-grow"></div>
             </div>
             <div className="flex justify-center space-x-4">
@@ -154,8 +117,11 @@ export default function EmployerLogin() {
           </CardContent>
           <CardFooter className="text-center">
             <p className="text-sm">
-              Don't have an account?{" "}
-              <Link href="/sign-up" className="text-blue-600 hover:underline">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/company-sign-up"
+                className="text-blue-600 hover:underline"
+              >
                 Sign Up
               </Link>
             </p>
@@ -165,7 +131,7 @@ export default function EmployerLogin() {
 
       {/* Right Side - Image Background */}
       <div
-        className="hidden md:block w-1/2 bg-cover bg-center"
+        className="hidden md:block md:w-1/2 bg-cover bg-center"
         style={{
           backgroundImage: "url('/login_image.jpg')",
         }}
