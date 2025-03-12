@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
-import { v4 as uuidv4 } from "uuid";
 
 export default function CompanySignup() {
   const [username, setUsername] = useState("");
@@ -43,7 +42,6 @@ export default function CompanySignup() {
 
     const { error } = await supabase.from("Employer").insert([
       {
-        id: uuidv4(),
         username,
         email,
         company_name: companyName,
@@ -172,7 +170,7 @@ export default function CompanySignup() {
             <p className="text-sm">
               Already have an account?{" "}
               <Link
-                href="/company-login"
+                href="/company-sign-up"
                 className="text-blue-600 hover:underline"
               >
                 Log In

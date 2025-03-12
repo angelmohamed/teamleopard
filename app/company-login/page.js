@@ -69,9 +69,9 @@ export default function EmployerLogin() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-row min-h-screen">
       {/* Left Side - Login Form */}
-      <div className="flex w-1/2 justify-center items-center bg-white p-10">
+      <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-semibold">Log In</CardTitle>
@@ -154,7 +154,7 @@ export default function EmployerLogin() {
           </CardContent>
           <CardFooter className="text-center">
             <p className="text-sm">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/sign-up" className="text-blue-600 hover:underline">
                 Sign Up
               </Link>
