@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -28,6 +30,7 @@ export default function Signup() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,35 +45,42 @@ export default function Signup() {
     }
 
     try {
-      // Step 1: Insert user data into the Employee table directly
-      const { data, error: insertError } = await supabase
+      // 1. Directly insert into Employee table (⚠️ security warning)
+      const { data, error } = await supabase
         .from("Employee")
         .insert([
           {
+            id: uuidv4(), 
             email,
-            username, // Save the username
+            username,
             first_name: firstName,
             last_name: lastName,
             phone_num: phoneNum,
             bio,
-            password, // Store the password directly
-            created_at: new Date(),
+            password, // ⚠️ Storing plain text password - INSECURE
           },
-        ]);
+        ])
+        .select();
 
-      if (insertError) {
-        setError(insertError.message);
-        setLoading(false);
-        return;
-      }
+      if (error) throw error;
 
-      setSuccess("Account created successfully.");
-      setLoading(false);
+      // 2. (Optional) Create auth user if needed for other features
+      const { error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${location.origin}/auth/callback` }
+      });
+
+      setSuccess("Account created successfully! Please login.");
+      setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
-      setError("Error creating account.");
+      console.error("Signup error:", error);
+      setError(error.message || "Error creating account");
+    } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex flex-row min-h-screen">
