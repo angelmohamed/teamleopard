@@ -119,14 +119,12 @@ export default function RootLayout({ children }) {
                         >
                           View Profile
                         </Link>
-                        <Button
-                          variant="ghost"
+                        <button
                           className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-md"
                           onClick={handleLogout}
                         >
-                          <LogOut className="w-4 h-4 mr-2" />
                           Log Out
-                        </Button>
+                        </button>
                       </PopoverContent>
                     </Popover>
                   </div>
