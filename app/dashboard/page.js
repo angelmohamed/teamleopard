@@ -12,36 +12,36 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Filter } from "lucide-react";
-import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "./layout";
+import JobPostings from "./jobPostings";
 
 export default function JobListings() {
-  const [employee, setEmployee] = useState(null); // For storing employee data
-  const [username, setUsername] = useState(""); // To store the username
-  const param = useParams();
-  const id = param.id;
+  const user = useAuth();
+  const [employee, setEmployee] = useState(null);
+  const [username, setUsername] = useState("");
 
-  // Fetch employee data when component mounts or id changes
+  // Fetch employee data when `user` is available
   useEffect(() => {
+    if (!user) return; // Ensure we have a logged-in user before fetching
+
     const fetchEmployeeData = async () => {
       const { data, error } = await supabase
         .from("Employee")
-        .select("username") // Fetch only the username
-        .eq("id", id)
-        .single(); // Assuming you want a single employee
+        .select("username")
+        .eq("id", user.id) // ✅ Use authenticated user's ID
+        .single();
 
       if (error) {
         console.error("Error fetching employee:", error);
       } else {
-        setEmployee(data); // Store entire employee data if needed
-        setUsername(data?.username); // Set the username
+        setEmployee(data);
+        setUsername(data?.username);
       }
     };
 
-    if (id) {
-      fetchEmployeeData();
-    }
-  }, [id]);
+    fetchEmployeeData();
+  }, [user]); // ✅ Runs when `user` changes
 
   const [filters, setFilters] = useState({
     location: "",
@@ -51,16 +51,14 @@ export default function JobListings() {
     jobType: "",
   });
 
-  // Update filter values
   const updateFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
     <div className="min-h-screen flex justify-center">
-      {/* Main Layout Container with Max Width */}
       <div className="w-full max-w-6xl flex">
-        {/* Sidebar - Hidden on mobile, shown on md+ */}
+        {/* Sidebar - Hidden on mobile */}
         <aside className="hidden md:block w-1/4 p-6">
           <h2 className="text-lg font-semibold mb-4">Filters</h2>
           <Button variant="link" className="text-red-500 p-0 mb-2">
@@ -181,7 +179,7 @@ export default function JobListings() {
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          {/* Mobile Filter Button */}
+          {/* Mobile Filter Button - ✅ Left untouched */}
           <div className="md:hidden mb-4">
             <Sheet>
               <SheetTrigger asChild>
@@ -232,10 +230,8 @@ export default function JobListings() {
               </SheetContent>
             </Sheet>
           </div>
-
-          {/* Groupmate's Cards */}
+          {/* Employee Profile */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Employee Preferences */}
             <Card>
               <CardHeader>
                 <CardTitle>Your profile</CardTitle>
@@ -245,7 +241,7 @@ export default function JobListings() {
               </CardContent>
             </Card>
 
-            {/* Upcoming Deadlines */}
+            {/* Placeholder Cards */}
             <Card>
               <CardHeader>
                 <CardTitle>Your upcoming deadlines</CardTitle>
@@ -255,7 +251,6 @@ export default function JobListings() {
               </CardContent>
             </Card>
 
-            {/* Applications */}
             <Card>
               <CardHeader>
                 <CardTitle>Your applications</CardTitle>
@@ -265,9 +260,10 @@ export default function JobListings() {
               </CardContent>
             </Card>
           </div>
-
-          {/* Divider */}
           <div className="border-b my-6"></div>
+          {/* Job Postings */}
+
+          <JobPostings />
         </main>
       </div>
     </div>
