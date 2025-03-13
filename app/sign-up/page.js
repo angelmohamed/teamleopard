@@ -14,11 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
+import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
-export default function Signup() {
+export default function EmployeeSignup() {
+  // ✅ Corrected function & component name
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -45,42 +45,75 @@ export default function Signup() {
     }
 
     try {
-      // 1. Directly insert into Employee table (⚠️ security warning)
-      const { data, error } = await supabase
-        .from("Employee")
-        .insert([
-          {
-            id: uuidv4(), 
-            email,
-            username,
-            first_name: firstName,
-            last_name: lastName,
-            phone_num: phoneNum,
-            bio,
-            password, // ⚠️ Storing plain text password - INSECURE
-          },
-        ])
-        .select();
+      console.log("🚀 Checking if email already exists in Employee table...");
 
-      if (error) throw error;
+      // 1️⃣ First, check if email already exists in Employee table
+      const { data: existingEmployee, error: employeeCheckError } =
+        await supabase
+          .from("Employee")
+          .select("id")
+          .eq("email", email)
+          .single();
 
-      // 2. (Optional) Create auth user if needed for other features
-      const { error: authError } = await supabase.auth.signUp({
+      if (existingEmployee) {
+        setError("Email is already registered. Try logging in.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("🚀 Signing up employee in Supabase Auth...");
+
+      // 2️⃣ Sign up the user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${location.origin}/auth/callback` }
+        options: { emailRedirectTo: `${location.origin}/auth/callback` },
       });
 
-      setSuccess("Account created successfully! Please login.");
+      if (authError) {
+        if (authError.message.includes("already registered")) {
+          setError("Email is already registered. Try logging in.");
+        } else {
+          setError(authError.message || "Error creating account.");
+        }
+        throw authError;
+      }
+
+      console.log("✅ Supabase Auth signup successful:", authData);
+
+      // 3️⃣ Ensure `user.id` exists (may be null if email verification is required)
+      const userId = authData.user?.id;
+      if (!userId) {
+        setError("Check your email to verify your account.");
+        return;
+      }
+
+      console.log("🔗 Linking employee to Employee table...");
+
+      // 4️⃣ Insert the employee into Employee table
+      const { error: employeeError } = await supabase.from("Employee").insert([
+        {
+          id: userId, // Use Auth-generated user ID to keep them linked
+          email,
+          username,
+          first_name: firstName,
+          last_name: lastName,
+          phone_num: phoneNum,
+          bio,
+        },
+      ]);
+
+      if (employeeError) throw employeeError;
+
+      setSuccess("Account created successfully! Please log in.");
       setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
-      console.error("Signup error:", error);
-      setError(error.message || "Error creating account");
+      console.error("❌ Signup error:", error);
+      setError(error.message || "Error creating account.");
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="flex flex-row min-h-screen">
@@ -88,7 +121,9 @@ export default function Signup() {
       <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-semibold">Sign Up</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              Employee Sign Up
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
@@ -194,24 +229,6 @@ export default function Signup() {
                 </Button>
               </div>
             </form>
-
-            {/* Social Login */}
-            <div className="flex items-center my-4">
-              <div className="border-b flex-grow"></div>
-              <p className="mx-3 text-gray-500 text-sm">Or sign up with</p>
-              <div className="border-b flex-grow"></div>
-            </div>
-            <div className="flex justify-center space-x-4">
-              <Button variant="outline" size="icon">
-                <FaFacebook className="text-blue-600" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <FaGoogle className="text-red-500" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <FaApple className="text-black" />
-              </Button>
-            </div>
           </CardContent>
           <CardFooter className="text-center">
             <p className="text-sm">
@@ -223,10 +240,8 @@ export default function Signup() {
           </CardFooter>
         </Card>
       </div>
-
-      {/* Right Side - Image Background (Hidden Below md) */}
       <div
-        className="hidden md:block md:w-1/2 bg-cover bg-center"
+        className="hidden md:block w-1/2 bg-cover bg-center"
         style={{ backgroundImage: "url('/sign_up_bg.jpg')" }}
       ></div>
     </div>
