@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function EmployeeLogin() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [captcha, setCaptcha] = useState("");
@@ -50,7 +50,8 @@ export default function EmployeeLogin() {
     }
 
     try {
-      // 1. Authenticate using Supabase Auth
+      console.log("🚀 Authenticating with Supabase...");
+      // 1️⃣ Authenticate using Supabase Auth
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email: email,
@@ -59,25 +60,42 @@ export default function EmployeeLogin() {
 
       if (authError) throw authError;
 
-      // 2. Get employee data using the authenticated user's ID
-      const { data: employeeData, error: queryError } = await supabase
+      console.log("✅ Supabase Auth successful:", authData);
+
+      // 2️⃣ Get authenticated user's ID
+      const userId = authData.user.id;
+
+      // 3️⃣ Check if user exists in Employee table
+      const { data: employeeData, error: employeeError } = await supabase
         .from("Employee")
         .select("*")
-        .eq("email", email) // Match by email since user_id might not be set yet
+        .eq("id", userId)
         .single();
 
-      if (queryError) throw queryError;
+      // 4️⃣ Check if user exists in Employer table
+      const { data: employerData, error: employerError } = await supabase
+        .from("Employer")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
-      // 3. Verify employee exists
-      if (!employeeData) {
-        throw new Error("Employee record not found");
+      // 5️⃣ Determine user role
+      if (employeeData) {
+        console.log("✅ Employee login successful.");
+        sessionStorage.setItem("userId", userId);
+        sessionStorage.setItem("role", "Employee");
+        window.location.href = `/dashboard/`;
+      } else if (employerData) {
+        console.log("✅ Employer login successful.");
+        sessionStorage.setItem("userId", userId);
+        sessionStorage.setItem("role", "Employer");
+        window.location.href = `/dashboard/`;
+      } else {
+        throw new Error("User profile not found.");
       }
-
-      // 4. Store session and redirect
-      sessionStorage.setItem("employeeId", employeeData.id);
-      window.location.href = `/dashboard/${employeeData.id}`;
     } catch (error) {
-      setError(error.message || "Authentication failed");
+      console.error("❌ Login error:", error);
+      setError(error.message || "Authentication failed.");
       fetchCaptcha();
     } finally {
       setLoading(false);
