@@ -17,7 +17,33 @@ import {
 const AuthContext = createContext(null);
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data, error } = await supabase.auth.getUser();
+      console.log("🔍 Debug: Auth Data ->", data); // ✅ ADD THIS TO DEBUG SESSION
+      console.log("🔍 Debug: Auth Error ->", error);
+
+      if (error || !data?.user) {
+        console.warn("⚠️ No user found. Redirecting to login.");
+        setUser(null);
+        // You might have this line to redirect, remove it if you don't want automatic redirect:
+        // router.replace("/login");
+      } else {
+        console.log("✅ User authenticated:", data.user);
+        setUser(data.user);
+      }
+
+      setLoading(false);
+    }
+
+    fetchUser();
+  }, []);
+
+  return { user, loading };
 }
 
 export default function RootLayout({ children }) {
@@ -114,7 +140,7 @@ export default function RootLayout({ children }) {
                       </PopoverTrigger>
                       <PopoverContent className="w-40 mt-2 bg-white shadow-md rounded-md border p-2">
                         <Link
-                          href="/profile"
+                          href="/dashboard/edit-profile"
                           className="block px-3 py-2 text-sm hover:bg-gray-100 rounded-md"
                         >
                           View Profile
