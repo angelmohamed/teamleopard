@@ -17,7 +17,8 @@ import { useAuth } from "./layout";
 import JobPostings from "./jobPostings";
 
 export default function JobListings() {
-  const user = useAuth();
+  // Corrected: destructure { user } from useAuth()
+  const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [username, setUsername] = useState("");
 
@@ -29,7 +30,7 @@ export default function JobListings() {
       const { data, error } = await supabase
         .from("Employee")
         .select("username")
-        .eq("id", user.id) // ✅ Use authenticated user's ID
+        .eq("id", user.id) // Use authenticated user's ID
         .single();
 
       if (error) {
@@ -41,7 +42,7 @@ export default function JobListings() {
     };
 
     fetchEmployeeData();
-  }, [user]); // ✅ Runs when `user` changes
+  }, [user]); // Runs when `user` changes
 
   const [filters, setFilters] = useState({
     location: "",
@@ -179,7 +180,7 @@ export default function JobListings() {
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          {/* Mobile Filter Button - ✅ Left untouched */}
+          {/* Mobile Filter Button */}
           <div className="md:hidden mb-4">
             <Sheet>
               <SheetTrigger asChild>
@@ -237,7 +238,7 @@ export default function JobListings() {
                 <CardTitle>Your profile</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Welcome, @{username || "Loading..."}</p>
+                <p>Welcome, {username || "Loading..."}</p>
               </CardContent>
             </Card>
 
@@ -262,7 +263,6 @@ export default function JobListings() {
           </div>
           <div className="border-b my-6"></div>
           {/* Job Postings */}
-
           <JobPostings />
         </main>
       </div>
