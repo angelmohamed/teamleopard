@@ -84,7 +84,7 @@ export default function EmployerLogin() {
 
     // Save session and redirect upon successful login
     sessionStorage.setItem("employerId", employerData.id);
-    window.location.href = `/dashboard/${employerData.id}`;
+    window.location.href = `/company-dashboard/`;
     setLoading(false);
   };
 
