@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
 export default function EmployerLogin() {
   const [email, setEmail] = useState("");
@@ -50,21 +49,42 @@ export default function EmployerLogin() {
       return;
     }
 
-    // Authenticate user using Supabase
-    const { data, error } = await supabase
-      .from("Employer")
-      .select("*")
-      .eq("email", email)
-      .eq("password", password)
-      .single();
+    // Authenticate user using Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (error || !data) {
-      setError("Invalid email or password");
-    } else {
-      sessionStorage.setItem("employerId", data.id);
-      window.location.href = `/dashboard/${data.id}`;
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+      return;
     }
 
+    // Extract user ID from Supabase Auth
+    const userId = authData.user?.id;
+    if (!userId) {
+      setError("Authentication failed. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    // Verify that the authenticated user has an Employer profile
+    const { data: employerData, error: employerError } = await supabase
+      .from("Employer")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (employerError || !employerData) {
+      setError("Employer profile not found.");
+      setLoading(false);
+      return;
+    }
+
+    // Save session and redirect upon successful login
+    sessionStorage.setItem("employerId", employerData.id);
+    window.location.href = `/dashboard/${employerData.id}`;
     setLoading(false);
   };
 
@@ -142,13 +162,13 @@ export default function EmployerLogin() {
             </div>
             <div className="flex justify-center space-x-4">
               <Button variant="outline" size="icon">
-                <FaFacebook className="text-blue-600" />
+                {/* Social login icons */}
               </Button>
               <Button variant="outline" size="icon">
-                <FaGoogle className="text-red-500" />
+                {/* Social login icons */}
               </Button>
               <Button variant="outline" size="icon">
-                <FaApple className="text-black" />
+                {/* Social login icons */}
               </Button>
             </div>
           </CardContent>
@@ -166,9 +186,7 @@ export default function EmployerLogin() {
       {/* Right Side - Image Background */}
       <div
         className="hidden md:block w-1/2 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/login_image.jpg')",
-        }}
+        style={{ backgroundImage: "url('/login_image.jpg')" }}
       ></div>
     </div>
   );
