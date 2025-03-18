@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Home, Inbox, Search, Settings, UserRound } from "lucide-react";
-import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
+import { supabase } from "@/lib/supabaseClient";
+
+import {
+  Home,
+  Inbox,
+  Search,
+  Settings,
+  UserRound,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -15,18 +21,18 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"; // Ensure this path is correct
+} from "@/components/ui/sidebar";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // shadcn Avatar
-import { Separator } from "@/components/ui/separator"; // shadcn Separator
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"; // shadcn Dropdown Menu
+} from "@/components/ui/dropdown-menu";
 
-// Menu items.
+// Menu items (unchanged)
 const items = [
   { title: "Home", url: "#", icon: Home },
   { title: "Search", url: "#", icon: Search },
@@ -35,41 +41,77 @@ const items = [
   { title: "Settings", url: "#", icon: Settings },
 ];
 
-export default function Layout({ children }) {
-  const [company, setCompany] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state
-  const param = useParams();
-  const id = param.id; // Get the company ID from the URL
+// 1️⃣ Local hook for session-based user
+function useAuth() {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
+    async function fetchUser() {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data?.user) {
+        console.warn("No user found; redirecting or showing fallback...");
+        setUser(null);
+        setAuthLoading(false);
+      } else {
+        setUser(data.user);
+        setAuthLoading(false);
+      }
+    }
+
+    fetchUser();
+  }, []);
+
+  return { user, authLoading };
+}
+
+export default function Layout({ children }) {
+  // 2️⃣ Get the logged-in user from our local hook
+  const { user, authLoading } = useAuth();
+
+  // 3️⃣ Local state for Employer’s data
+  const [company, setCompany] = useState(null);
+  const [companyLoading, setCompanyLoading] = useState(true);
+
+  // 4️⃣ Fetch the employer row once we have a user
+  useEffect(() => {
+    if (!user) {
+      // If user is null, either show fallback or just skip
+      setCompanyLoading(false);
+      return;
+    }
+
     const fetchCompanyData = async () => {
       try {
-        // Fetch company data from the "Employer" table
+        // Query your "Employer" table using user.id
         const { data, error } = await supabase
-          .from("Employer") // Replace with the actual table name
-          .select("company_name") // Columns you need
-          .eq("id", id) // Use the id from the URL params
-          .single(); // Get a single result (assuming id is unique)
+          .from("Employer")
+          .select("company_name")
+          .eq("id", user.id) // or .eq("user_id", user.id) if your column name differs
+          .single();
 
-        if (error) {
-          throw error;
-        }
-        setCompany(data); // Set company data if fetch is successful
-      } catch (error) {
-        console.error("Error fetching company data:", error.message);
+        if (error) throw error;
+
+        setCompany(data);
+      } catch (err) {
+        console.error("Error fetching company data:", err.message);
       } finally {
-        setLoading(false); // Set loading to false after fetching data
+        setCompanyLoading(false);
       }
     };
 
-    if (id) {
-      fetchCompanyData();
-    }
-  }, [id]);
+    fetchCompanyData();
+  }, [user]);
+
+  // 5️⃣ If auth or company is still loading, show a fallback
+  if (authLoading || companyLoading) {
+    return <p className="text-center text-gray-600 mt-10">Loading...</p>;
+  }
 
   return (
     <SidebarProvider>
-      {/* ✅ Wrap Sidebar + Page Content in the same flex container */}
+      {/* Same UI as before */}
       <div className="flex h-screen">
         {/* Sidebar */}
         <Sidebar>
@@ -92,26 +134,26 @@ export default function Layout({ children }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* ✅ User Profile Section (shadcn UI) */}
+            {/* User Profile Section */}
             <div className="mt-auto p-4">
-              <Separator className="mb-3" /> {/* Divider line */}
-
+              <Separator className="mb-3" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <div className="flex items-center gap-3 cursor-pointer">
                     <Avatar>
                       <AvatarImage src="/profile.jpg" alt="User Avatar" />
-                      <AvatarFallback>JD</AvatarFallback> {/* Initials if no image */}
+                      <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
                     <div>
-                      {/* Check if the company is loading */}
-                      {loading ? (
-                        <p>Loading...</p> // Show loading text while fetching
-                      ) : (
-                        <div>
-                          <p className="text-sm font-medium">{company?.company_name}</p>
+                      {company ? (
+                        <>
+                          <p className="text-sm font-medium">
+                            {company.company_name}
+                          </p>
                           <p className="text-xs text-gray-500">Admin</p>
-                        </div>
+                        </>
+                      ) : (
+                        <p>Unknown Company</p>
                       )}
                     </div>
                   </div>
@@ -120,14 +162,16 @@ export default function Layout({ children }) {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-500">Logout</DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-500">
+                    Logout
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </SidebarContent>
         </Sidebar>
 
-        {/* ✅ Page Content goes here */}
+        {/* Main Page Content */}
         <main className="flex-1">{children}</main>
       </div>
     </SidebarProvider>
