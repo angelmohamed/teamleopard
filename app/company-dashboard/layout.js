@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // 1️⃣ Import useRouter
 import { supabase } from "@/lib/supabaseClient";
 
 import {
@@ -67,8 +68,9 @@ function useAuth() {
 }
 
 export default function Layout({ children }) {
-  // 2️⃣ Get the logged-in user from our local hook
+  // 2️⃣ Get the logged-in user & router
   const { user, authLoading } = useAuth();
+  const router = useRouter();
 
   // 3️⃣ Local state for Employer’s data
   const [company, setCompany] = useState(null);
@@ -104,14 +106,19 @@ export default function Layout({ children }) {
     fetchCompanyData();
   }, [user]);
 
-  // 5️⃣ If auth or company is still loading, show a fallback
+  // 5️⃣ Logout handler that redirects to /company-login
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace("/company-login");
+  };
+
+  // 6️⃣ If auth or company is still loading, show a fallback
   if (authLoading || companyLoading) {
     return <p className="text-center text-gray-600 mt-10">Loading...</p>;
   }
 
   return (
     <SidebarProvider>
-      {/* Same UI as before */}
       <div className="flex h-screen">
         {/* Sidebar */}
         <Sidebar>
@@ -162,7 +169,8 @@ export default function Layout({ children }) {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-500">
+                  {/* 7️⃣ Use our handleLogout function here */}
+                  <DropdownMenuItem className="text-red-500" onClick={handleLogout}>
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
