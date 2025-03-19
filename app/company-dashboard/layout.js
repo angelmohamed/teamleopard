@@ -89,7 +89,7 @@ export default function Layout({ children }) {
         // Query your "Employer" table using user.id
         const { data, error } = await supabase
           .from("Employer")
-          .select("company_name")
+          .select("company_name, username")
           .eq("id", user.id) // or .eq("user_id", user.id) if your column name differs
           .single();
 
@@ -155,9 +155,9 @@ export default function Layout({ children }) {
                       {company ? (
                         <>
                           <p className="text-sm font-medium">
-                            {company.company_name}
+                            {company.username || "Unknown User"}
                           </p>
-                          <p className="text-xs text-gray-500">Admin</p>
+                          <p className="text-xs text-gray-500">{company.company_name}</p>
                         </>
                       ) : (
                         <p>Unknown Company</p>
