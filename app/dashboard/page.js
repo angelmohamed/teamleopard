@@ -140,7 +140,7 @@ export default function JobListings() {
                       <li key={job.posting_id}>
                         <a
                           href={`/dashboard/listing/${job.posting_id}`}
-                          className="hover:underline"
+                          className="hover:underline mb-1 text-sm text-gray-600"
                         >
                           {job.title}
                         </a>
