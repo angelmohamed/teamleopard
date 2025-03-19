@@ -1,269 +1,176 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Filter } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "./layout";
-import JobPostings from "./jobPostings";
+import JobPostings from "./job-postings";
+import Filters from "./filters-aside";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Filter } from "lucide-react";
 
 export default function JobListings() {
-  // Corrected: destructure { user } from useAuth()
   const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
-  const [username, setUsername] = useState("");
+  const [savedJobs, setSavedJobs] = useState([]); // Tracks saved jobs
 
-  // Fetch employee data when `user` is available
+  // 1️⃣ Fetch employee details (username, first_name)
   useEffect(() => {
-    if (!user) return; // Ensure we have a logged-in user before fetching
-
-    const fetchEmployeeData = async () => {
+    if (!user) return;
+    (async () => {
       const { data, error } = await supabase
         .from("Employee")
-        .select("username")
-        .eq("id", user.id) // Use authenticated user's ID
+        .select("username, first_name")
+        .eq("id", user.id)
         .single();
 
-      if (error) {
-        console.error("Error fetching employee:", error);
-      } else {
-        setEmployee(data);
-        setUsername(data?.username);
-      }
+      if (!error && data) setEmployee(data);
+    })();
+  }, [user]);
+
+  // 2️⃣ Function to fetch saved jobs (called on mount + updates)
+  const fetchSavedJobs = async () => {
+    if (!user) return;
+
+    // Step 1: Get job_posting_ids from "Saved_Jobs"
+    const { data, error } = await supabase
+      .from("Saved_Jobs")
+      .select("job_posting_id")
+      .eq("employee_ID", user.id);
+
+    if (error || !data) {
+      console.error("Error fetching saved jobs:", error);
+      setSavedJobs([]);
+      return;
+    }
+
+    if (data.length === 0) {
+      setSavedJobs([]);
+      return;
+    }
+
+    // Step 2: Fetch job titles from "Job_Posting"
+    const jobIds = data.map((item) => item.job_posting_id);
+    const { data: jobData, error: jobError } = await supabase
+      .from("Job_Posting")
+      .select("posting_id, title")
+      .in("posting_id", jobIds);
+
+    if (jobError || !jobData) {
+      console.error("Error fetching job titles:", jobError);
+      setSavedJobs([]);
+      return;
+    }
+
+    setSavedJobs(jobData); // => e.g. [ {posting_id, title}, ...]
+  };
+
+  // 3️⃣ Use effect to fetch on mount + subscribe to Supabase updates
+  useEffect(() => {
+    fetchSavedJobs();
+
+    // Realtime listener for Saved_Jobs table
+    const subscription = supabase
+      .channel("saved_jobs_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "Saved_Jobs" },
+        () => {
+          fetchSavedJobs(); // Fetch updated saved jobs when changes occur
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription); // Cleanup subscription
     };
+  }, [user]);
 
-    fetchEmployeeData();
-  }, [user]); // Runs when `user` changes
-
-  const [filters, setFilters] = useState({
-    location: "",
-    employmentType: "",
-    employer: "",
-    sector: "",
-    jobType: "",
-  });
-
-  const updateFilter = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  // 4️⃣ Callback for <JobPostings> to trigger refresh
+  const handleSavedJobsChange = async () => {
+    console.log("Refreshing saved jobs..."); // Debugging log
+    await fetchSavedJobs(); // Ensure backend updates reflect in UI
   };
 
   return (
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-6xl flex">
-        {/* Sidebar - Hidden on mobile */}
-        <aside className="hidden md:block w-1/4 p-6">
-          <h2 className="text-lg font-semibold mb-4">Filters</h2>
-          <Button variant="link" className="text-red-500 p-0 mb-2">
-            Clear all filters
-          </Button>
+        <Filters />
 
-          <Accordion type="single" collapsible>
-            {/* Content Types */}
-            <AccordionItem value="contentTypes" className="border-b">
-              <AccordionTrigger className="text-sm font-medium">
-                Content Types
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li className="flex items-center">
-                    <input
-                      type="radio"
-                      name="contentType"
-                      value="all"
-                      defaultChecked
-                      className="mr-2"
-                    />
-                    All
-                  </li>
-                  <li className="flex items-center">
-                    <input
-                      type="radio"
-                      name="contentType"
-                      value="jobs"
-                      className="mr-2"
-                    />
-                    Jobs (3577)
-                  </li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Sectors */}
-            <AccordionItem value="sectors" className="border-b">
-              <AccordionTrigger className="text-sm font-medium">
-                Sectors
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li className="flex items-center">
-                    <input
-                      type="radio"
-                      name="sector"
-                      value="all"
-                      defaultChecked
-                      className="mr-2"
-                    />
-                    All
-                  </li>
-                  <li className="flex items-center">
-                    <input
-                      type="radio"
-                      name="sector"
-                      value="tech"
-                      className="mr-2"
-                    />
-                    Technology & IT
-                  </li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Employers */}
-            <AccordionItem value="employers" className="border-b">
-              <AccordionTrigger className="text-sm font-medium">
-                Employers
-              </AccordionTrigger>
-              <AccordionContent>
-                <Input
-                  placeholder="Search employer"
-                  value={filters.employer}
-                  onChange={(e) => updateFilter("employer", e.target.value)}
-                />
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Locations */}
-            <AccordionItem value="locations" className="border-b">
-              <AccordionTrigger className="text-sm font-medium">
-                Locations
-              </AccordionTrigger>
-              <AccordionContent>
-                <Input
-                  placeholder="Enter a location"
-                  value={filters.location}
-                  onChange={(e) => updateFilter("location", e.target.value)}
-                />
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Job Types */}
-            <AccordionItem value="jobTypes" className="border-b">
-              <AccordionTrigger className="text-sm font-medium">
-                Job Types
-              </AccordionTrigger>
-              <AccordionContent>
-                <Select
-                  onValueChange={(value) => updateFilter("jobType", value)}
-                >
-                  <option value="">Select job type</option>
-                  <option value="graduate">Graduate</option>
-                  <option value="placement">Placement</option>
-                  <option value="internship">Internship</option>
-                </Select>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-
-          <Button variant="default" className="w-full mt-4">
-            Apply Filters
-          </Button>
-        </aside>
-
-        {/* Main Content */}
         <main className="flex-1 p-6">
-          {/* Mobile Filter Button */}
           <div className="md:hidden mb-4">
             <Sheet>
               <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex items-center space-x-2"
-                >
+                <Button variant="outline" className="flex items-center space-x-2">
                   <Filter className="w-5 h-5" />
                   <span>Filters</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-6">
-                <h2 className="text-lg font-semibold mb-4">Filters</h2>
-                <Accordion type="single" collapsible>
-                  <AccordionItem value="contentTypes" className="border-b">
-                    <AccordionTrigger className="text-sm font-medium">
-                      Content Types
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="space-y-2 text-sm text-gray-700">
-                        <li className="flex items-center">
-                          <input
-                            type="radio"
-                            name="contentType"
-                            value="all"
-                            defaultChecked
-                            className="mr-2"
-                          />
-                          All
-                        </li>
-                        <li className="flex items-center">
-                          <input
-                            type="radio"
-                            name="contentType"
-                            value="jobs"
-                            className="mr-2"
-                          />
-                          Jobs (3577)
-                        </li>
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-
-                <Button variant="default" className="w-full mt-4">
-                  Apply Filters
-                </Button>
+                {/* mobile filters */}
               </SheetContent>
             </Sheet>
           </div>
-          {/* Employee Profile */}
+
+          {/* Profile Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>Your profile</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Welcome, {username || "Loading..."}</p>
+                <p className="text-gray-600 text-sm">
+                  Welcome,{" "}
+                  {employee?.first_name ?? employee?.username ?? "Loading..."}
+                </p>
               </CardContent>
             </Card>
 
-            {/* Placeholder Cards */}
+            {/* Saved Jobs Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Your upcoming deadlines</CardTitle>
+                <CardTitle>Your saved jobs</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Placeholder</p>
+                {savedJobs.length === 0 ? (
+                  <p className="mb-1 text-sm text-gray-600">No saved jobs yet.</p>
+                ) : (
+                  <ul className="list-disc list-inside">
+                    {savedJobs.slice(0, 3).map((job) => (
+                      <li key={job.posting_id}>
+                        <a
+                          href={`/dashboard/listing/${job.posting_id}`}
+                          className="hover:underline"
+                        >
+                          {job.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {savedJobs.length > 3 && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    And {savedJobs.length - 3} more...
+                  </p>
+                )}
               </CardContent>
             </Card>
 
+            {/* Applications Section */}
             <Card>
               <CardHeader>
                 <CardTitle>Your applications</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Placeholder</p>
+                <p className="text-gray-600 text-sm">Placeholder</p>
               </CardContent>
             </Card>
           </div>
-          <div className="border-b my-6"></div>
-          {/* Job Postings */}
-          <JobPostings />
+
+          <div className="border-b my-6" />
+
+          {/* Pass the callback to <JobPostings> */}
+          <JobPostings onSavedJobsChange={handleSavedJobsChange} />
         </main>
       </div>
     </div>
