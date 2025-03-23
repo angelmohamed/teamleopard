@@ -8,14 +8,21 @@ import { ExternalLink, FolderHeart, MapPin } from "lucide-react";
 export default function JobPostings({ onSavedJobsChange }) {
   const [jobs, setJobs] = useState([]);
   const [savedJobIds, setSavedJobIds] = useState([]); // Track saved job IDs
+  const [limit, setLimit] = useState(4); // Number of jobs to display (starts with 4)
 
-  // 🔹 1. Load job postings
+  // Increase 'limit' by 4 to load 4 more jobs
+  const handleLoadMore = () => {
+    setLimit((prev) => prev + 4);
+  };
+  
+
+  // 🔹 1. Load job postings, reacts to 'limit' being changed.
   useEffect(() => {
     const fetchJobs = async () => {
       const { data, error } = await supabase
         .from("Job_Posting")
         .select("posting_id, title, description, location, employment_type")
-        .limit(5);
+        .limit(limit);
 
       if (error) {
         console.error("Error fetching jobs:", error);
@@ -24,7 +31,7 @@ export default function JobPostings({ onSavedJobsChange }) {
       }
     };
     fetchJobs();
-  }, []);
+  }, [limit]);
 
   // 🔹 2. Fetch saved job IDs for the user
   useEffect(() => {
@@ -148,8 +155,19 @@ export default function JobPostings({ onSavedJobsChange }) {
             );
           })}
         </div>
+        
       ) : (
         <p>No jobs available.</p>
+      )}
+
+      {/* Load More Button */}
+      {/* Disappears when all jobs have been loaded. */}
+      {jobs.length >= limit && (
+        <div className="flex justify-center mt-4">
+          <button onClick={handleLoadMore} variant="default" className="px-4 py-2 bg-black text-white rounded-lg transition">
+            Load More
+          </button>
+        </div>
       )}
     </div>
   );
