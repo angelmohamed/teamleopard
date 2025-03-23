@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MapPin, Briefcase, DollarSign, CalendarDays } from "lucide-react"; // Import proper icons
+import PostedTimeDisplay from "./posted-time"; //for displaying the Published Date
 
 export default function JobDetails() {
     const { id } = useParams();
@@ -15,7 +16,7 @@ export default function JobDetails() {
             const { data, error } = await supabase
                 .from("Job_Posting")
                 .select(`
-                    posting_id, title, description, location, employment_type, salary_range, deadline, expected_skills,
+                    posting_id, title, description, location, employment_type, salary_range, posted_at, deadline, expected_skills,
                     Employer (company_name, company_description)
                 `)
                 .eq("posting_id", id)
@@ -90,6 +91,7 @@ export default function JobDetails() {
 
             {/* Job Description */}
             <div className="mt-10">
+                <PostedTimeDisplay published={job.posted_at.replace(" ", "T")}/>
                 <h2 className="text-xl font-semibold mb-4">Job Description</h2>
                 <p className="text-gray-700">{job.description}</p>
 
