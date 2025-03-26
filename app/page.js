@@ -1,3 +1,5 @@
+"use client";
+
 import "./globals.css";
 import Link from "next/link"; // Correct import for Next.js Link
 import Image from "next/image";
@@ -18,12 +20,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 {
   /* THINGS TO CHANGE: COLOUR SCHEME, TEXT BOXES, PLACEHOLDER IMAGES, SELECTION COLOUR FOR TABS (you cant see the selected item well), LAST CARDS SECTION*/
 }
 
 export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) router.push("/dashboard");
+    };
+    checkAuth();
+  }, [router]);
+
   return (
     <div className="bg-white">
       {/* NAVBAR ON TOP */}
@@ -210,89 +225,89 @@ export default function HomePage() {
                 <Card className="h-full flex flex-col bg-slate-100">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "Landed my current job nearly 6 years ago with <b>Connect</b>, still loving it today!"
+                    &quot;Landed my current job nearly 6 years ago with <b>Connect</b>, still loving it today!&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @james_heff - Job Seeker
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
               <CarouselItem className="basis-full md:basis-1/3">
                 <Card className="h-full flex flex-col">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "Running a small firm had never been easier. Over half of our team crossed paths through <b>Connect</b>.
+                    &quot;Running a small firm had never been easier. Over half of our team crossed paths through <b>Connect</b>.
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @jr_clarks - Business Owner
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
               <CarouselItem className="basis-full md:basis-1/3">
                 <Card className="h-full flex flex-col bg-slate-100">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "I went through nearly a dozen jobs with little passion. <b>Connect</b> found me my perfect career within days."
+                    &quot;I went through nearly a dozen jobs with little passion. <b>Connect</b> found me my perfect career within days.&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @steverson  - Job Seeker
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
               <CarouselItem className="basis-full md:basis-1/3">
                 <Card className="h-full flex flex-col">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "<b>Connect</b> was able to recommend me my dream position within minutes, and got me the offer within days."
+                    &quot;<b>Connect</b> was able to recommend me my dream position within minutes, and got me the offer within days.&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @mariahc - Job Seeker
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
               <CarouselItem className="basis-full md:basis-1/3">
                 <Card className="h-full flex flex-col bg-slate-100">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "Through <b>Connect</b> I've grown my online business faster than I ever could alone.
+                    &quot;Through <b>Connect</b> I&quot;ve grown my online business faster than I ever could alone.&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @leo_j - Business Owner
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
               <CarouselItem className="basis-full md:basis-1/3">
                 <Card className="h-full flex flex-col">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "<b>Connect</b> saved me."
+                    &quot;<b>Connect</b> saved me.&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @paul - Job Seeker
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
               <CarouselItem className="basis-full md:basis-1/3">
                 <Card className="h-full flex flex-col bg-slate-100">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "The tools offered by <b>Connect</b> are simply unrivaled."
+                    &quot;The tools offered by <b>Connect</b> are simply unrivaled.&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @marievankane - Job Seeker
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
               <CarouselItem className="basis-full md:basis-1/3">
                 <Card className="h-full flex flex-col">
                   <CardHeader>★★★★★</CardHeader>
                   <CardContent className="flex-grow"><p className="text-2xl italic">
-                    "I wouldn't be where I am today without the help of <b>Connect</b>."
+                    &quot;I wouldn&apos;t be where I am today without the help of <b>Connect</b>.&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
                     @m_puranam - Job Seeker
                   </p></CardFooter>
-                 </Card>
+                </Card>
               </CarouselItem>
             </CarouselContent>
             <CarouselPrevious className="bg-slate-500 absolute -left-10" />
