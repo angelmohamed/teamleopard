@@ -140,7 +140,7 @@ export default function RootLayout({ children }) {
                       </PopoverTrigger>
                       <PopoverContent className="w-40 mt-2 bg-white shadow-md rounded-md border p-2">
                         <Link
-                          href="/dashboard/edit-profile"
+                          href="/edit-profile"
                           className="block px-3 py-2 text-sm hover:bg-gray-100 rounded-md"
                         >
                           View Profile

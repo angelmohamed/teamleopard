@@ -14,7 +14,6 @@ export default function JobPostings({ onSavedJobsChange }) {
   const handleLoadMore = () => {
     setLimit((prev) => prev + 4);
   };
-  
 
   // 🔹 1. Load job postings, reacts to 'limit' being changed.
   useEffect(() => {
