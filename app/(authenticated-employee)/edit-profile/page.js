@@ -31,7 +31,7 @@ export default function EditProfile() {
   const [email, setEmail] = useState("");
   const [bio, setBio] = useState("");
 
-  const [cvUrl, setCvUrl] = useState(null);
+  const [cvInfo, setCvInfo] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -52,18 +52,16 @@ export default function EditProfile() {
       setPhoneNum(data.phone_num || "");
       setBio(data.bio || "");
 
-      const { data: list } = await supabase.storage
-        .from("cv-uploads")
-        .list(`cv/${user.id}`);
+      const { data: list } = await supabase.storage.from("cv-uploads").list(`cv/${user.id}`);
 
       if (list && list.length > 0) {
-        const fileName = list[0].name;
+        const file = list[0];
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from("cv-uploads")
-          .createSignedUrl(`cv/${user.id}/${fileName}`, 60 * 60); // 1 hour expiry
+          .createSignedUrl(`cv/${user.id}/${file.name}`, 60 * 60);
 
         if (!signedUrlError) {
-          setCvUrl(signedUrlData.signedUrl);
+          setCvInfo({ name: file.name, uploadedAt: file.updated_at, url: signedUrlData.signedUrl });
         }
       }
     };
@@ -135,37 +133,28 @@ export default function EditProfile() {
     } else {
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from("cv-uploads")
-        .createSignedUrl(`cv/${user.id}/${fileName}`, 60 * 60); // 1 hour expiry
+        .createSignedUrl(filePath, 60 * 60);
 
       if (!signedUrlError) {
-        setCvUrl(signedUrlData.signedUrl);
+        setCvInfo({ name: file.name, uploadedAt: new Date().toISOString(), url: signedUrlData.signedUrl });
       }
       alert("CV uploaded successfully!");
     }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <p className="text-gray-600">Checking authentication...</p>
-      </div>
-    );
+    return <div className="min-h-screen flex justify-center items-center"><p className="text-gray-600">Checking authentication...</p></div>;
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <p className="text-gray-600 text-lg">You must be logged in to edit your profile.</p>
-      </div>
-    );
+    return <div className="min-h-screen flex justify-center items-center"><p className="text-gray-600 text-lg">You must be logged in to edit your profile.</p></div>;
   }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-6">
         <Link href="/dashboard" className="flex items-center text-blue-600 hover:text-blue-800">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
         </Link>
       </div>
 
@@ -212,7 +201,6 @@ export default function EditProfile() {
           </CardContent>
         </Card>
 
-        {/* Upload CV */}
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -242,8 +230,11 @@ export default function EditProfile() {
                 }}
               />
             </div>
-            {cvUrl && (
-              <p className="text-sm text-gray-700 mt-2">Current CV: <a href={cvUrl} download className="underline" target="_blank">Download CV</a></p>
+            {cvInfo && (
+              <p className="text-sm text-gray-700 mt-2">
+                Current CV: <a href={cvInfo.url} download className="underline" target="_blank">{cvInfo.name}</a><br />
+                <span className="text-xs text-gray-500">Uploaded: {new Date(cvInfo.uploadedAt).toLocaleString()}</span>
+              </p>
             )}
           </CardContent>
         </Card>
