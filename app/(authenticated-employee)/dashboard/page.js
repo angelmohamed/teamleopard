@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "./layout";
+import { useAuth } from "../layout";
 import JobPostings from "./job-postings";
 import Filters from "./filters-aside";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";

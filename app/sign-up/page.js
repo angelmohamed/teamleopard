@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
 export default function EmployeeSignup() {
-  // ✅ Corrected function & component name
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
