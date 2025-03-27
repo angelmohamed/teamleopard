@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useEffect, useState, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Bell, MessageSquare, User, LogOut } from "lucide-react";
+import { Bell, MessageSquare, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import { usePathname } from 'next/navigation'
 
 // Context to share user data across all dashboard pages
 const AuthContext = createContext(null);
@@ -20,11 +21,12 @@ export function useAuth() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname(); // Add this line
 
   useEffect(() => {
     async function fetchUser() {
       const { data, error } = await supabase.auth.getUser();
-      console.log("🔍 Debug: Auth Data ->", data); // ✅ ADD THIS TO DEBUG SESSION
+      console.log("🔍 Debug: Auth Data ->", data);
       console.log("🔍 Debug: Auth Error ->", error);
 
       if (error || !data?.user) {
@@ -50,19 +52,18 @@ export default function RootLayout({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data, error } = await supabase.auth.getUser();
-
       if (error || !data.user) {
-        router.replace("/login"); // Redirect if not logged in
+        router.replace("/login");
       } else {
         setUser(data.user);
       }
       setLoading(false);
     };
-
     fetchUser();
   }, [router]);
 
@@ -72,10 +73,9 @@ export default function RootLayout({ children }) {
   };
 
   if (loading) {
-    return <p className="text-center text-gray-600 mt-10">Loading...</p>; // Prevent layout flicker
+    return <p className="text-center text-gray-600 mt-10">Loading...</p>;
   }
-
-  if (!user) return null; // Prevent rendering anything if user is null (redirecting)
+  if (!user) return null;
 
   return (
     <AuthContext.Provider value={user}>
@@ -99,41 +99,32 @@ export default function RootLayout({ children }) {
               <div className="flex items-center space-x-6 md:space-x-4">
                 {/* Icons Section */}
                 <div className="flex items-center space-x-4">
-                  {/* Messages */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-600 hover:text-black"
-                    asChild
-                  >
-                    <Link href="/messages">
-                      <MessageSquare size={28} />
+                  {/* Dashboard Icon */}
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href="/dashboard">
+                      <LayoutDashboard
+                        size={28}
+                        className={
+                          pathname === "/dashboard"
+                            ? "text-[#4259A8]"
+                            : "text-gray-600"
+                        }
+                      />
                     </Link>
                   </Button>
 
-                  {/* Notifications */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative text-gray-600 hover:text-black"
-                    asChild
-                  >
-                    <Link href="/notifications">
-                      <Bell size={28} />
-                      <span className="absolute -top-1 right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                        1
-                      </span>
-                    </Link>
-                  </Button>
-
-                  {/* Profile Dropdown - FIXED HOVER ISSUE */}
+                  {/* Profile Dropdown */}
                   <div className="relative">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-gray-600 hover:text-black"
+                          className={
+                            pathname === "/edit-profile"
+                              ? "text-[#4259A8] hover:text-black"
+                              : "text-gray-600 hover:text-black"
+                          }
                         >
                           <User size={28} />
                         </Button>
@@ -159,12 +150,16 @@ export default function RootLayout({ children }) {
                 {/* Divider - Hidden on Mobile */}
                 <div className="hidden md:block h-6 border-l"></div>
 
-                {/* Employer / Post Job - Hidden on Mobile */}
+                {/* Resume IQ Link */}
                 <Link
-                  href="/employer"
-                  className="hidden md:block text-gray-700 hover:text-black text-sm font-medium"
+                  href="/resume-iq"
+                  className={
+                    pathname === "/resume-iq"
+                      ? "hidden md:block text-[#4259A8] hover:text-black text-sm font-medium"
+                      : "hidden md:block text-gray-600 hover:text-black text-sm font-medium"
+                  }
                 >
-                  Employers / Post Job
+                  Resume IQ™
                 </Link>
               </div>
             </div>
@@ -178,4 +173,5 @@ export default function RootLayout({ children }) {
       </html>
     </AuthContext.Provider>
   );
+
 }
