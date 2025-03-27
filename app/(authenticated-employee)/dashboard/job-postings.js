@@ -154,7 +154,7 @@ export default function JobPostings({ onSavedJobsChange }) {
             );
           })}
         </div>
-        
+
       ) : (
         <p>No jobs available.</p>
       )}
@@ -162,7 +162,7 @@ export default function JobPostings({ onSavedJobsChange }) {
       {/* Load More Button */}
       {/* Disappears when all jobs have been loaded. */}
       {jobs.length >= limit && (
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-left mt-4">
           <button onClick={handleLoadMore} variant="default" className="px-4 py-2 bg-black text-white rounded-lg transition">
             Load More
           </button>

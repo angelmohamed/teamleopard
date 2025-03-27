@@ -29,7 +29,7 @@ export default function JobListings() {
   }, [user]);
 
   // 2️⃣ Function to fetch saved jobs (called on mount + updates)
-  const fetchSavedJobs = async () => {
+  const fetchSavedJobs = React.useCallback(async () => {
     if (!user) return;
 
     // Step 1: Get job_posting_ids from "Saved_Jobs"
@@ -63,7 +63,7 @@ export default function JobListings() {
     }
 
     setSavedJobs(jobData); // => e.g. [ {posting_id, title}, ...]
-  };
+  }, [user]);
 
   // 3️⃣ Use effect to fetch on mount + subscribe to Supabase updates
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function JobListings() {
     return () => {
       supabase.removeChannel(subscription); // Cleanup subscription
     };
-  }, [user]);
+  }, [fetchSavedJobs, user]);
 
   // 4️⃣ Callback for <JobPostings> to trigger refresh
   const handleSavedJobsChange = async () => {
