@@ -13,6 +13,7 @@ export default function JobListings() {
   const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [savedJobs, setSavedJobs] = useState([]); // Tracks saved jobs
+  const [activeFilters, setActiveFilters] = useState({});
 
   // 1️⃣ Fetch employee details (username, first_name)
   useEffect(() => {
@@ -92,10 +93,15 @@ export default function JobListings() {
     await fetchSavedJobs(); // Ensure backend updates reflect in UI
   };
 
+  // Handle filter changes from the Filters component
+  const handleFilterChange = (filters) => {
+    setActiveFilters(filters);
+  };
+
   return (
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-6xl flex">
-        <Filters />
+        <Filters onFilterChange={handleFilterChange} />
 
         <main className="flex-1 p-6">
           <div className="md:hidden mb-4">
@@ -107,7 +113,8 @@ export default function JobListings() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-6">
-                {/* mobile filters */}
+                {/* Mobile filters */}
+                <Filters onFilterChange={handleFilterChange} />
               </SheetContent>
             </Sheet>
           </div>
@@ -169,8 +176,8 @@ export default function JobListings() {
 
           <div className="border-b my-6" />
 
-          {/* Pass the callback to <JobPostings> */}
-          <JobPostings onSavedJobsChange={handleSavedJobsChange} />
+          {/* Pass the callback and filters to <JobPostings> */}
+          <JobPostings onSavedJobsChange={handleSavedJobsChange} filters={activeFilters} />
         </main>
       </div>
     </div>
