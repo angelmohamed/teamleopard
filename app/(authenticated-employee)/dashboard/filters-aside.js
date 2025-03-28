@@ -1,4 +1,3 @@
-// /components/FilterAside.jsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -22,14 +21,14 @@ export default function FilterAside({ onFilterChange }) {
   const [employerSearch, setEmployerSearch] = useState("");
   const [selectedJobType, setSelectedJobType] = useState("");
   const [employers, setEmployers] = useState([]);
-  const [sectors, setSectors] = useState([
+  const [sectors] = useState([
     "Technology & IT",
     "Healthcare",
     "Finance",
     "Education",
     "Manufacturing",
     "Retail",
-    "Other"
+    "Other",
   ]);
 
   // Fetch employers for the dropdown
@@ -38,35 +37,33 @@ export default function FilterAside({ onFilterChange }) {
       const { data, error } = await supabase
         .from("Employer")
         .select("id, company_name");
-      
+
       if (!error && data) {
         setEmployers(data);
       }
     };
-    
+
     fetchEmployers();
   }, []);
 
-  // Handle filter application
+  // Create filter object and pass to parent
   const applyFilters = () => {
-    // Create filter object
     const filters = {
       salary: {
         min: salaryMin ? parseInt(salaryMin, 10) : null,
-        max: salaryMax ? parseInt(salaryMax, 10) : null
+        max: salaryMax ? parseInt(salaryMax, 10) : null,
       },
       sector: selectedSector !== "all" ? selectedSector : null,
       employer: selectedEmployer || null,
-      jobType: selectedJobType || null
+      jobType: selectedJobType || null,
     };
-    
-    // Pass filters to parent component
+
     if (onFilterChange) {
       onFilterChange(filters);
     }
   };
 
-  // Handle clearing all filters
+  // Clear all filters
   const clearFilters = () => {
     setSalaryMin("");
     setSalaryMax("");
@@ -74,8 +71,7 @@ export default function FilterAside({ onFilterChange }) {
     setSelectedEmployer("");
     setEmployerSearch("");
     setSelectedJobType("");
-    
-    // Pass empty filters to parent
+
     if (onFilterChange) {
       onFilterChange({});
     }
@@ -83,15 +79,29 @@ export default function FilterAside({ onFilterChange }) {
 
   // Filter employers based on search
   const filteredEmployers = employerSearch
-    ? employers.filter(emp => 
-        emp.company_name.toLowerCase().includes(employerSearch.toLowerCase()))
+    ? employers.filter((emp) =>
+        emp.company_name.toLowerCase().includes(employerSearch.toLowerCase())
+      )
     : employers;
+
+  // For displaying the employer name in the active filters section
+  const chosenEmployerName = selectedEmployer
+    ? employers.find((e) => e.id === selectedEmployer)?.company_name
+    : "";
+
+  // Check if any filters are active
+  const anyFiltersActive =
+    salaryMin ||
+    salaryMax ||
+    selectedSector !== "all" ||
+    selectedEmployer ||
+    selectedJobType;
 
   return (
     <aside className="hidden md:block w-1/4 p-6">
       <h2 className="text-lg font-semibold mb-4">Filters</h2>
-      <Button 
-        variant="link" 
+      <Button
+        variant="link"
         className="text-red-500 p-0 mb-2"
         onClick={clearFilters}
       >
@@ -107,20 +117,24 @@ export default function FilterAside({ onFilterChange }) {
           <AccordionContent>
             <div className="space-y-3">
               <div>
-                <label className="text-sm text-gray-700 block mb-1">Minimum Salary</label>
-                <Input 
-                  type="number" 
-                  placeholder="Min salary" 
+                <label className="text-sm text-gray-700 block mb-1">
+                  Minimum Salary
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Min salary"
                   value={salaryMin}
                   onChange={(e) => setSalaryMin(e.target.value)}
                   className="w-full"
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-700 block mb-1">Maximum Salary</label>
-                <Input 
-                  type="number" 
-                  placeholder="Max salary" 
+                <label className="text-sm text-gray-700 block mb-1">
+                  Maximum Salary
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Max salary"
                   value={salaryMax}
                   onChange={(e) => setSalaryMax(e.target.value)}
                   className="w-full"
@@ -174,13 +188,13 @@ export default function FilterAside({ onFilterChange }) {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-3">
-              <Input 
-                placeholder="Search employer" 
+              <Input
+                placeholder="Search employer"
                 value={employerSearch}
                 onChange={(e) => setEmployerSearch(e.target.value)}
                 className="mb-2"
               />
-              <Select 
+              <Select
                 value={selectedEmployer}
                 onChange={(e) => setSelectedEmployer(e.target.value)}
                 className="w-full"
@@ -218,13 +232,34 @@ export default function FilterAside({ onFilterChange }) {
         </AccordionItem>
       </Accordion>
 
-      <Button 
-        variant="default" 
-        className="w-full mt-4"
-        onClick={applyFilters}
-      >
+      {/* Apply Filters button */}
+      <Button variant="default" className="w-full mt-4" onClick={applyFilters}>
         Apply Filters
       </Button>
+
+      {/* Only show "Reset filters" and chosen filter summary if any filters are active */}
+      {anyFiltersActive && (
+        <div className="mt-4">
+          <button
+            onClick={clearFilters}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Reset filters
+          </button>
+          <div className="text-xs text-gray-600 mt-2">
+            <p className="font-medium mb-1">Active filters:</p>
+            <ul className="list-disc ml-5">
+              {salaryMin && <li>Min Salary: {salaryMin}</li>}
+              {salaryMax && <li>Max Salary: {salaryMax}</li>}
+              {selectedSector !== "all" && <li>Sector: {selectedSector}</li>}
+              {selectedEmployer && (
+                <li>Employer: {chosenEmployerName || selectedEmployer}</li>
+              )}
+              {selectedJobType && <li>Job Type: {selectedJobType}</li>}
+            </ul>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
