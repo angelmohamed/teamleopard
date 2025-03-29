@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
 
 // We keep your param usage for job posting ID, but won't use it for fetching Employer info
 import { useParams } from "next/navigation";
@@ -117,31 +118,64 @@ export default function CompanyDashboard() {
     setError(null);
     setSuccess(null);
 
-    const { error: insertError } = await supabase.from("Job_Posting").insert([
-      {
-        title: jobTitle,
-        description,
-        location,
-        employment_type: employmentType,
-        salary_range: salaryRange,
-        deadline,
-        expected_skills: expectedSkills,
-        status,
-        company_ID: id, // param-based ID
-        posted_at: new Date().toISOString(),
-      },
-    ]);
+    try {
+      // Basic validation
+      if (!jobTitle.trim() || !description.trim() || !location.trim() || 
+          !employmentType || !salaryRange.trim() || !deadline || !expectedSkills.trim()) {
+        throw new Error("Please fill in all required fields");
+      }
 
-    if (insertError) {
-      setError(insertError.message);
-    } else {
-      setSuccess("Job listing created successfully!");
-      fetchJobListings(); 
+      // Validate deadline is not in the past
+      const deadlineDate = new Date(deadline);
+      if (deadlineDate < new Date()) {
+        throw new Error("Deadline cannot be in the past");
+      }
+
+      // Create the job posting
+      const { error: insertError } = await supabase
+        .from("Job_Posting")
+        .insert([
+          {
+            title: jobTitle.trim(),
+            description: description.trim(),
+            location: location.trim(),
+            employment_type: employmentType,
+            salary_range: salaryRange.trim(),
+            deadline,
+            expected_skills: expectedSkills.trim(),
+            status,
+            company_ID: user.id,
+            posted_at: new Date().toISOString(),
+          },
+        ]);
+
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
+
+      // Clear form on success
+      setJobTitle("");
+      setDescription("");
+      setLocation("");
+      setEmploymentType("");
+      setSalaryRange("");
+      setDeadline("");
+      setExpectedSkills("");
+      setStatus("open");
+      
+      setSuccess("Job posted successfully!");
+      
+      // Refresh job listings
+      fetchJobListings();
+    } catch (error) {
+      console.error("Error posting job:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  // 5️⃣ If auth is loading or we haven’t loaded company yet, show a fallback
+  // 5️⃣ If auth is loading or we haven't loaded company yet, show a fallback
   if (authLoading) return <p>Loading...</p>;
 
   // If we didn't fetch a company row yet, also show a basic "Loading..."
@@ -207,97 +241,141 @@ export default function CompanyDashboard() {
             </CardContent>
           </Card>
 
-          <div className="flex w-1/2 justify-center items-center bg-white p-10">
-            <Card className="w-full max-w-md shadow-lg rounded-lg">
-              <CardHeader className="text-center">
+          {/* Job Posting Form */}
+          <div className="w-full bg-white p-6">
+            <Card className="w-full shadow-lg rounded-lg">
+              <CardHeader className="text-center border-b pb-4">
                 <CardTitle className="text-2xl font-semibold">
                   List A Job
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+              <CardContent className="pt-6">
+                {error && <p className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-md">{error}</p>}
                 {success && (
-                  <p className="text-green-600 text-sm mb-2">{success}</p>
+                  <p className="text-green-600 text-sm mb-4 p-3 bg-green-50 rounded-md">{success}</p>
                 )}
                 <form onSubmit={handleSubmit}>
-                  <div className="grid gap-4">
-                    <div>
-                      <Label>Job Title</Label>
-                      <Input
-                        placeholder="Enter Job Title"
-                        onChange={(e) => setJobTitle(e.target.value)}
-                        required
-                      />
+                  <div className="grid gap-6">
+                    {/* Title and Employment Type row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Job Title</Label>
+                        <Input
+                          placeholder="e.g. Senior Software Engineer"
+                          value={jobTitle}
+                          onChange={(e) => setJobTitle(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label>Employment Type</Label>
+                        <select
+                          value={employmentType}
+                          onChange={(e) => setEmploymentType(e.target.value)}
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="">Select employment type</option>
+                          <option value="Full-time">Full-time</option>
+                          <option value="Part-time">Part-time</option>
+                          <option value="Contract">Contract</option>
+                          <option value="Internship">Internship</option>
+                          <option value="Remote">Remote</option>
+                        </select>
+                      </div>
                     </div>
+
+                    {/* Location and Salary row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Location</Label>
+                        <Input
+                          type="text"
+                          placeholder="e.g. London, UK or Remote"
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label>Salary Range</Label>
+                        <Input
+                          type="text"
+                          placeholder="e.g. £50,000 - £70,000 or $50k - $70k"
+                          value={salaryRange}
+                          onChange={(e) => setSalaryRange(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Description field */}
                     <div>
                       <Label htmlFor="description">Description</Label>
                       <textarea
                         id="description"
-                        placeholder="Enter Job Description"
+                        placeholder="Detailed job description, responsibilities, and requirements"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
+                        required
+                        className="w-full p-2 border border-gray-300 rounded-md min-h-[200px]"
+                        rows="8"
+                      />
+                    </div>
+
+                    {/* Deadline and Status row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Application Deadline</Label>
+                        <Input
+                          type="date"
+                          value={deadline}
+                          onChange={(e) => setDeadline(e.target.value)}
+                          required
+                          min={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                      <div>
+                        <Label>Status</Label>
+                        <select
+                          value={status}
+                          onChange={(e) => setStatus(e.target.value)}
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="open">Open</option>
+                          <option value="closed">Closed</option>
+                          <option value="draft">Draft</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Skills field */}
+                    <div>
+                      <Label>Expected Skills</Label>
+                      <textarea
+                        placeholder="List required skills, one per line"
+                        value={expectedSkills}
+                        onChange={(e) => setExpectedSkills(e.target.value)}
                         required
                         className="w-full p-2 border border-gray-300 rounded-md"
                         rows="4"
                       />
                     </div>
-                    <div>
-                      <Label>Location</Label>
-                      <Input
-                        type="text"
-                        placeholder="Enter Job Location"
-                        onChange={(e) => setLocation(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Employment Type</Label>
-                      <select
-                        value={employmentType}
-                        onChange={(e) => setEmploymentType(e.target.value)}
-                        required
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      >
-                        <option value="">Select Employment Type</option>
-                        <option value="Full-time">Full-time</option>
-                        <option value="Part-time">Part-time</option>
-                        <option value="Contract">Contract</option>
-                        <option value="Freelance">Freelance</option>
-                        <option value="Internship">Internship</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Salary Range</Label>
-                      <Input
-                        type="text"
-                        placeholder="Enter Salary Range"
-                        onChange={(e) => setSalaryRange(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Deadline</Label>
-                      <Input
-                        type="date"
-                        onChange={(e) => setDeadline(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Expected Skills</Label>
-                      <Input
-                        type="text"
-                        placeholder="Enter Expected Skills"
-                        onChange={(e) => setExpectedSkills(e.target.value)}
-                        required
-                      />
-                    </div>
+
                     <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700"
                       type="submit"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg"
                       disabled={loading}
                     >
-                      {loading ? "Listing Job..." : "Listing Job"}
+                      {loading ? (
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Posting Job...
+                        </div>
+                      ) : (
+                        'Post Job'
+                      )}
                     </Button>
                   </div>
                 </form>
