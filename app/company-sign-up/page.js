@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
 export default function CompanySignup() {
@@ -27,6 +28,7 @@ export default function CompanySignup() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,21 +42,45 @@ export default function CompanySignup() {
       return;
     }
 
-    const { error } = await supabase.from("Employer").insert([
+    // Create the user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${location.origin}/auth/callback` },
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Ensure the user ID is present
+    const userId = authData.user?.id;
+    if (!userId) {
+      setError("Check your email to verify your account.");
+      setLoading(false);
+      return;
+    }
+
+    // Insert the employer data without a password column
+    const { error: employerError } = await supabase.from("Employer").insert([
       {
+        id: userId, // Linking the Auth user to the Employer table
         username,
         email,
         company_name: companyName,
         company_description: companyDescription,
         phone_num: phoneNum,
-        password, // Store securely with hashing in a real implementation
       },
     ]);
 
-    if (error) {
-      setError(error.message);
+    if (employerError) {
+      setError(employerError.message);
     } else {
       setSuccess("Account created successfully!");
+      // Optionally, redirect the user after signup
+      // setTimeout(() => router.push("/login"), 2000);
     }
 
     setLoading(false);
@@ -180,7 +206,7 @@ export default function CompanySignup() {
         </Card>
       </div>
 
-      {/* Right Side - Image Background (Hidden Below md) */}
+      {/* Right Side - Image Background */}
       <div
         className="hidden md:block md:w-1/2 bg-cover bg-center"
         style={{ backgroundImage: "url('/sign_up_bg.jpg')" }}

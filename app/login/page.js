@@ -1,7 +1,7 @@
 "use client";
 
 import "../globals.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -14,44 +14,98 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 
-export default function EmployeeLogin() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captcha, setCaptcha] = useState("");
+  const [captchaText, setCaptchaText] = useState("");
+  const [captchaImage, setCaptchaImage] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Fetch CAPTCHA on component mount
+  const fetchCaptcha = async () => {
+    const res = await fetch("/api/captcha");
+    const data = await res.json();
+    setCaptchaImage(data.svg);
+    setCaptchaText(data.text);
+  };
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Authenticate using email and password, checking against the Employee table
-    const { data, error } = await supabase
-      .from("Employee") // Ensure the table name is "Employee" in your Supabase schema
-      .select("*")
-      .eq("email", email)
-      .eq("password", password)
-      .single(); // Fetch only one employee record
-
-    if (error || !data) {
-      setError("Invalid email or password");
-    } else {
-      // Store the employee's id in sessionStorage or localStorage
-      sessionStorage.setItem("employeeId", data.id);
-
-      // Redirect to the employee dashboard with the employee's id in the URL
-      window.location.href = `/dashboard/${data.id}`;
+    // Validate CAPTCHA first
+    if (captcha !== captchaText) {
+      setError("Incorrect CAPTCHA. Please try again.");
+      fetchCaptcha();
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    try {
+      console.log("🚀 Authenticating with Supabase...");
+      // 1️⃣ Authenticate using Supabase Auth
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
+
+      if (authError) throw authError;
+
+      console.log("✅ Supabase Auth successful:", authData);
+
+      // 2️⃣ Get authenticated user's ID
+      const userId = authData.user.id;
+
+      // 3️⃣ Check if user exists in Employee table
+      const { data: employeeData, error: employeeError } = await supabase
+        .from("Employee")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      // 4️⃣ Check if user exists in Employer table
+      const { data: employerData, error: employerError } = await supabase
+        .from("Employer")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      // 5️⃣ Determine user role
+      if (employeeData) {
+        console.log("✅ Employee login successful.");
+        sessionStorage.setItem("userId", userId);
+        sessionStorage.setItem("role", "Employee");
+        window.location.href = `/dashboard/`;
+      } else if (employerData) {
+        console.log("✅ Employer login successful.");
+        sessionStorage.setItem("userId", userId);
+        sessionStorage.setItem("role", "Employer");
+        window.location.href = `/dashboard/`;
+      } else {
+        throw new Error("User profile not found.");
+      }
+    } catch (error) {
+      console.error("❌ Login error:", error);
+      setError(error.message || "Authentication failed.");
+      fetchCaptcha();
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-row min-h-screen">
       {/* Left Side - Login Form */}
-      <div className="flex w-1/2 justify-center items-center bg-white p-10">
+      <div className="flex w-full md:w-1/2 justify-center items-center bg-white p-10">
         <Card className="w-full max-w-md shadow-lg rounded-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-semibold">Log In</CardTitle>
@@ -82,6 +136,28 @@ export default function EmployeeLogin() {
                     required
                   />
                 </div>
+
+                {/* CAPTCHA */}
+                <div className="flex flex-col items-center">
+                  <Label>Enter the code shown below:</Label>
+                  <div dangerouslySetInnerHTML={{ __html: captchaImage }} />
+                  <Input
+                    id="captcha"
+                    type="text"
+                    placeholder="Enter CAPTCHA"
+                    value={captcha}
+                    onChange={(e) => setCaptcha(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="text-blue-600 text-sm mt-1"
+                    onClick={fetchCaptcha}
+                  >
+                    Refresh CAPTCHA
+                  </button>
+                </div>
+
                 <Button
                   className="w-full bg-blue-600 hover:bg-blue-700"
                   type="submit"
@@ -91,28 +167,10 @@ export default function EmployeeLogin() {
                 </Button>
               </div>
             </form>
-
-            {/* Social Login */}
-            <div className="flex items-center my-4">
-              <div className="border-b flex-grow"></div>
-              <p className="mx-3 text-gray-500 text-sm">or sign in with</p>
-              <div className="border-b flex-grow"></div>
-            </div>
-            <div className="flex justify-center space-x-4">
-              <Button variant="outline" size="icon">
-                <FaFacebook className="text-blue-600" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <FaGoogle className="text-red-500" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <FaApple className="text-black" />
-              </Button>
-            </div>
           </CardContent>
           <CardFooter className="text-center">
             <p className="text-sm">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/sign-up" className="text-blue-600 hover:underline">
                 Sign Up
               </Link>
@@ -121,12 +179,9 @@ export default function EmployeeLogin() {
         </Card>
       </div>
 
-      {/* Right Side - Image Background */}
       <div
         className="hidden md:block w-1/2 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/login_image.jpg')",
-        }}
+        style={{ backgroundImage: "url('/login_image.jpg')" }}
       ></div>
     </div>
   );
