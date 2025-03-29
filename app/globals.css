@@ -56,7 +56,6 @@
   html,
   body {
     height: 100%;
-    font-family: var(--font-sans), sans-serif;
     color: var(--foreground);
     background-color: rgb(255, 255, 255);
   }
