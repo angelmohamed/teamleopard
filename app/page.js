@@ -58,10 +58,10 @@ export default function HomePage() {
                 <Link href="/login">Log In</Link>
               </Button>
               <Button asChild>
-                <Link href="/sign-up">Sign Up</Link>
+                <Link href="/sign-up">Sign Up As Employee</Link>
               </Button>
               <Button asChild>
-                <Link href="/company-sign-up">Register As Employer</Link>
+                <Link href="/company-sign-up">Sign Up As Employer</Link>
               </Button>
             </ul>
           </nav>
