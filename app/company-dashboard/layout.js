@@ -106,10 +106,10 @@ export default function Layout({ children }) {
     fetchCompanyData();
   }, [user]);
 
-  // 5️⃣ Logout handler that redirects to /company-login
+  // 5️⃣ Logout handler that redirects to /login
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace("/company-login");
+    router.replace("/login");
   };
 
   // 6️⃣ If auth or company is still loading, show a fallback
