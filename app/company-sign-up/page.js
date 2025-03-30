@@ -196,7 +196,7 @@ export default function CompanySignup() {
             <p className="text-sm">
               Already have an account?{" "}
               <Link
-                href="/company-sign-up"
+                href="/login"
                 className="text-blue-600 hover:underline"
               >
                 Log In

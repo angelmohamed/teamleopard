@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -23,6 +24,7 @@ export default function Login() {
   const [captchaImage, setCaptchaImage] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   // Fetch CAPTCHA on component mount
   const fetchCaptcha = async () => {
@@ -79,17 +81,17 @@ export default function Login() {
         .eq("id", userId)
         .single();
 
-      // 5️⃣ Determine user role
+      // 5️⃣ Determine user role and redirect accordingly
       if (employeeData) {
         console.log("✅ Employee login successful.");
         sessionStorage.setItem("userId", userId);
         sessionStorage.setItem("role", "Employee");
-        window.location.href = `/dashboard/`;
+        router.push("/dashboard/");
       } else if (employerData) {
         console.log("✅ Employer login successful.");
         sessionStorage.setItem("userId", userId);
         sessionStorage.setItem("role", "Employer");
-        window.location.href = `/dashboard/`;
+        router.push("/company-dashboard/");
       } else {
         throw new Error("User profile not found.");
       }
@@ -169,10 +171,15 @@ export default function Login() {
             </form>
           </CardContent>
           <CardFooter className="text-center">
+            <p className="text-sm">Don&apos;t have an account?</p>
             <p className="text-sm">
-              Don&apos;t have an account?{" "}
               <Link href="/sign-up" className="text-blue-600 hover:underline">
-                Sign Up
+                Sign Up as Employee
+              </Link>
+            </p>
+            <p className="text-sm">
+              <Link href="/company-sign-up" className="text-blue-600 hover:underline">
+                Sign Up as Employer
               </Link>
             </p>
           </CardFooter>
