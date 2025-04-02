@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MapPin, Briefcase, DollarSign, CalendarDays, FolderHeart, Share2 } from "lucide-react";
 import PostedTimeDisplay from "./posted-time";
 import { Button } from "@/components/ui/button";
+import 'react-quill/dist/quill.snow.css'; //to display formatted description
 
 export default function JobDetails() {
     const { id } = useParams();
@@ -140,8 +141,13 @@ export default function JobDetails() {
             </div>
             <div className="mt-10">
                 <PostedTimeDisplay published={job.posted_at.replace(" ", "T")} />
-                <h2 className="text-xl font-semibold mb-4">Job Description</h2>
-                <p className="text-gray-700">{job.description}</p>
+                <h2 className="text-xl font-semibold mb-4">Job Description:</h2>
+                {/* Display formatted description */}
+                <div className="text-gray-700" dangerouslySetInnerHTML={{
+                     __html: job.description
+                     .replace(/class="ql-size-large"/g, 'class="text-2xl font-bold"')
+                }}/>
+                {/*The .replace converts quill css into tailwind*/}
 
                 {job.expected_skills && (
                     <div className="mt-6">
