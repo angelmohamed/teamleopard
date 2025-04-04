@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MapPin, Briefcase, DollarSign, CalendarDays, FolderHeart, Share2 } from "lucide-react";
 import PostedTimeDisplay from "./posted-time";
 import { Button } from "@/components/ui/button";
-import 'react-quill/dist/quill.snow.css'; //to display formatted description
+import Link from "next/link";
 
 export default function JobDetails() {
     const { id } = useParams();
@@ -80,7 +80,12 @@ export default function JobDetails() {
     };
 
     if (loading) return <p className="text-center text-gray-500 mt-6">Loading job details...</p>;
-    if (!job) return <p className="text-center text-red-500 mt-6">Job not found.</p>;
+    if (!job) return (
+        <div className="text-center text-red-500 mt-6">
+            <p>Job not found.</p>
+            <Link href={`/dashboard`} className="underline text-gray-800">Return to dashboard.</Link>
+        </div>
+    );
 
     return (
         <div className="max-w-6xl mx-auto p-6">
@@ -137,7 +142,9 @@ export default function JobDetails() {
                 >
                     <Share2 size={20} />
                 </button>
-                <Button className="text-sm px-4 py-1.5">Apply Now</Button>
+                <Link href={`/apply/${id}`}> {/*Button to apply page*/}
+                    <Button className="text-sm px-4 py-1.5">Apply Now</Button>
+                </Link>
             </div>
             <div className="mt-10">
                 <PostedTimeDisplay published={job.posted_at.replace(" ", "T")} />
