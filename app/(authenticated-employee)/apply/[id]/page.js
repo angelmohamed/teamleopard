@@ -51,13 +51,12 @@ export default function ApplicationForm() {
 
   const { id } = useParams();
   const [job, setJob] = useState(null);
-  const [invalidUser, setInvalidUser] = useState(false); //block user from applying more than once
+  const [invalidUser, setInvalidUser] = useState(false); //block user from applying more than once (unnecessary function?)
 
   const { user } = useAuth();
-  const [cvInfo, setCvInfo] = useState(null);
+  const [cvName, setCvName] = useState(null);
   const [usingCv, setUsingCv] = useState(false);
   const [employee, setEmployee] = useState(null);
-  const [resumeUrl, setResumeUrl] = useState(null);
 
   {/*Supabase fetching - Job*/}
   useEffect(() => {
@@ -96,17 +95,13 @@ export default function ApplicationForm() {
       if (!error && data) setEmployee(data);
 
       //fetch cv attached to this user
-      const { data: list } = await supabase.storage.from("cv-uploads").list(`cv/${user.id}`);
-      
-      if (list && list.length > 0) {
-        const file = list[0];
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from("cv-uploads")
-          .createSignedUrl(`cv/${user.id}/${file.name}`, 60 * 60);
-      
-        if (!signedUrlError) {
-          setCvInfo({ name: file.name, uploadedAt: file.updated_at, url: signedUrlData.signedUrl });
-        }
+      const { data: cvData, error: cvError } = await supabase
+        .from("CVs")
+        .select("file_name")
+        .eq("employee_id", user.id)
+        .single();
+      if (cvData && !cvError) {
+        setCvName(cvData.file_name);
       }
 
       setLoadingUser(false);
@@ -162,26 +157,16 @@ export default function ApplicationForm() {
       return null;
     }
   
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from("cv-uploads")
-      .createSignedUrl(filePath, 60 * 60);
-  
-    if (signedUrlError) {
-      alert("Error creating signed URL: " + signedUrlError.message);
-      return null;
-    }
-  
-    //return url string
-    setResumeUrl(signedUrlData.signedUrl);
-    return signedUrlData.signedUrl;
+    //return name
+    return file.name;
   };
 
   const onSubmit = async (data) => {
     setLoadingSubmission(true);
-    let finalResumeUrl = null;
+    let fileName = null;
   
-    if (usingCv && cvInfo) {
-      finalResumeUrl = cvInfo.url;
+    if (usingCv && cvName) {
+      fileName = cvName;
     } else {
       if (resume) {
         if (resume.size > 10485760) {
@@ -189,12 +174,12 @@ export default function ApplicationForm() {
           setLoadingSubmission(false);
           return;
         }
-        const uploadedUrl = await handleFileUpload(resume);
-        if (!uploadedUrl) {
+        const uploadedName = await handleFileUpload(resume);
+        if (!uploadedName) {
           setLoadingSubmission(false);
           return; // breaks if the upload fails.
         }
-        finalResumeUrl = uploadedUrl;
+        fileName = uploadedName;
       } else {
         alert("Please upload a resume");
         setLoadingSubmission(false);
@@ -206,7 +191,7 @@ export default function ApplicationForm() {
       .from("Applications")
       .insert({
         cover_letter: data.coverLetter,
-        resume_url: finalResumeUrl,
+        resume_file_name: fileName,
         job_posting_id: id,
         employee_ID: user.id,
         status: "pending"
@@ -350,7 +335,7 @@ export default function ApplicationForm() {
                           <UploadCloud className="w-5 h-5" /> Upload PDF
                         </Button>
                         <Button type="button" 
-                          onClick={() => cvInfo ? setUsingCv(true) : alert("Error: No CV has been attached to this user. Upload one in Resume IQ.")} 
+                          onClick={() => cvName ? setUsingCv(true) : alert("Error: No CV has been attached to this user. Upload one in Resume IQ.")} 
                           className="flex items-center gap-2 min-w-[150px]">
                           Attach Profile CV
                         </Button>
@@ -362,7 +347,7 @@ export default function ApplicationForm() {
                           <p className="text-green-600 text-sm">Selected File: {resume.name}</p>
                         ) : (
                           usingCv ? (
-                            <p className="text-green-600 text-sm">Using Profile CV: {cvInfo.name}</p>
+                            <p className="text-green-600 text-sm">Using Profile CV: {cvName}</p>
                           ) : (
                             <p className="text-gray-500 text-sm">Attach your Resume.</p>
                           )
