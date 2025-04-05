@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MapPin, Briefcase, DollarSign, CalendarDays, FolderHeart, Share2 } from "lucide-react";
 import PostedTimeDisplay from "./posted-time";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function JobDetails() {
     const { id } = useParams();
@@ -79,7 +80,12 @@ export default function JobDetails() {
     };
 
     if (loading) return <p className="text-center text-gray-500 mt-6">Loading job details...</p>;
-    if (!job) return <p className="text-center text-red-500 mt-6">Job not found.</p>;
+    if (!job) return (
+        <div className="text-center text-red-500 mt-6">
+            <p>Job not found.</p>
+            <Link href={`/dashboard`} className="underline text-gray-800">Return to dashboard.</Link>
+        </div>
+    );
 
     return (
         <div className="max-w-6xl mx-auto p-6">
@@ -136,12 +142,19 @@ export default function JobDetails() {
                 >
                     <Share2 size={20} />
                 </button>
-                <Button className="text-sm px-4 py-1.5">Apply Now</Button>
+                <Link href={`/apply/${id}`}> {/*Button to apply page*/}
+                    <Button className="text-sm px-4 py-1.5">Apply Now</Button>
+                </Link>
             </div>
             <div className="mt-10">
                 <PostedTimeDisplay published={job.posted_at.replace(" ", "T")} />
-                <h2 className="text-xl font-semibold mb-4">Job Description</h2>
-                <p className="text-gray-700">{job.description}</p>
+                <h2 className="text-xl font-semibold mb-4">Job Description:</h2>
+                {/* Display formatted description */}
+                <div className="text-gray-700" dangerouslySetInnerHTML={{
+                     __html: job.description
+                     .replace(/class="ql-size-large"/g, 'class="text-2xl font-bold"')
+                }}/>
+                {/*The .replace converts quill css into tailwind*/}
 
                 {job.expected_skills && (
                     <div className="mt-6">

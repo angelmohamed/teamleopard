@@ -52,6 +52,7 @@ export default function ResumeAnalysis() {
       setPhoneNum(data.phone_num || "");
       setBio(data.bio || "");
 
+      /* old code:
       const { data: list } = await supabase.storage.from("cv-uploads").list(`cv/${user.id}`);
 
       if (list && list.length > 0) {
@@ -62,6 +63,22 @@ export default function ResumeAnalysis() {
 
         if (!signedUrlError) {
           setCvInfo({ name: file.name, uploadedAt: file.updated_at, url: signedUrlData.signedUrl });
+        }
+      }*/
+
+      const { data: cvData, error: cvError } = await supabase
+        .from("CVs")
+        .select("file_name, updated_at")
+        .eq("employee_id", user.id)
+        .single();
+      if (cvData && !cvError) {
+        const fileName = cvData.file_name;
+        const filePath = `cv/${user.id}/${fileName}`;
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from("cv-uploads")
+          .createSignedUrl(filePath, 3600);
+        if (!signedUrlError) {
+          setCvInfo({ name: fileName, uploadedAt: cvData.updated_at, url: signedUrlData.signedUrl });
         }
       }
     };
@@ -133,13 +150,31 @@ export default function ResumeAnalysis() {
     } else {
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from("cv-uploads")
-        .createSignedUrl(filePath, 60 * 60);
+        .createSignedUrl(filePath, 3600);
 
       if (!signedUrlError) {
-        setCvInfo({ name: file.name, uploadedAt: new Date().toISOString(), url: signedUrlData.signedUrl });
+        const newCvInfo = { name: file.name, uploadedAt: new Date().toISOString(), url: signedUrlData.signedUrl };
+        setCvInfo(newCvInfo);
+        alert("CV uploaded successfully!");
+      
+        // Use newCvInfo.url directly in the upsert call
+        const { errorUpsert } = await supabase
+          .from("CVs")
+          .upsert(
+            {
+              employee_id: user.id,
+              file_name: newCvInfo.name, //name to allow directory searching
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "employee_id" }
+          );
+      
+        if (errorUpsert) {
+          alert("Upload failed: " + errorUpsert.message);
+        }
       }
-      alert("CV uploaded successfully!");
     }
+
   };
 
   if (loading) {

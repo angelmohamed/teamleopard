@@ -24,26 +24,35 @@ export function useAuth() {
   const pathname = usePathname(); // Add this line
 
   useEffect(() => {
-    async function fetchUser() {
-      const { data, error } = await supabase.auth.getUser();
-      console.log("🔍 Debug: Auth Data ->", data);
-      console.log("🔍 Debug: Auth Error ->", error);
-
-      if (error || !data?.user) {
-        console.warn("⚠️ No user found. Redirecting to login.");
-        setUser(null);
-        // You might have this line to redirect, remove it if you don't want automatic redirect:
-        // router.replace("/login");
-      } else {
-        console.log("✅ User authenticated:", data.user);
-        setUser(data.user);
+    const fetchUser = async () => {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user) {
+        router.replace("/login");
+        return;
       }
 
+      const userId = authData.user.id;
+
+      // Check if user is an employer
+      const { data: employerData, error: employerError } = await supabase
+        .from("Employer")
+        .select("id")
+        .eq("id", userId)
+        .single();
+
+      if (employerData && !employerError) {
+        router.replace("/company-dashboard");
+        return;
+      }
+
+      // Else, set as employee
+      setUser(authData.user);
       setLoading(false);
-    }
+    };
 
     fetchUser();
-  }, []);
+  }, [router]);
+
 
   return { user, loading };
 }
@@ -173,5 +182,4 @@ export default function RootLayout({ children }) {
       </html>
     </AuthContext.Provider>
   );
-
 }

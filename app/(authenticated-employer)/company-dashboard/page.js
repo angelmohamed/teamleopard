@@ -14,6 +14,11 @@ import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+// The following are used for React-Quill's dynamic description box
+import dynamic from 'next/dynamic'; //for desc box
+import 'react-quill/dist/quill.snow.css'; //for desc box
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+
 // 1️⃣ Local `useAuth` hook for session-based user
 function useAuth() {
   const [user, setUser] = useState(null);
@@ -191,7 +196,16 @@ export default function CompanyDashboard() {
     "🔵 5 new applications received for Backend Engineer", 
   ];
 
-  // 6️⃣ The rest of your UI is untouched
+  // modules for reactquill texbox
+  const modules = {
+    toolbar: [
+      [{ 'size': ['normal', 'large'/*, 'huge'*/] }], // text sizes
+      ['bold', 'italic', 'underline'], // text styles
+      /*[{ 'list': 'ordered' }, { 'list': 'bullet' }],*/ //list options (incompatible?)
+      ['clean'] // reset formatting
+    ],
+  };
+
   return (
     <main className="flex flex-col gap-6 p-6">
       <h1 className="text-2xl font-bold">Company Dashboard</h1>
@@ -310,6 +324,7 @@ export default function CompanyDashboard() {
                     </div>
 
                     {/* Description field */}
+                    {/* OLD:
                     <div>
                       <Label htmlFor="description">Description</Label>
                       <textarea
@@ -320,6 +335,19 @@ export default function CompanyDashboard() {
                         required
                         className="w-full p-2 border border-gray-300 rounded-md min-h-[200px]"
                         rows="8"
+                      />
+                    </div>*/}
+                    
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <ReactQuill
+                        id="description"
+                        value={description}
+                        onChange={setDescription}
+                        /*onChange={(e) => setDescription(e.target.value)} <- this doesnt work*/
+                        modules={modules}
+                        placeholder="Detailed job description, responsibilities, and requirements"
+                        style={{ minHeight: '3rem' }}
                       />
                     </div>
 
