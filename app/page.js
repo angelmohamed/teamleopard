@@ -58,10 +58,10 @@ export default function HomePage() {
                 <Link href="/login">Log In</Link>
               </Button>
               <Button asChild>
-                <Link href="/sign-up">Sign Up</Link>
+                <Link href="/sign-up">Sign Up As Employee</Link>
               </Button>
               <Button asChild>
-                <Link href="/company-sign-up">Register As Employer</Link>
+                <Link href="/company-sign-up">Sign Up As Employer</Link>
               </Button>
             </ul>
           </nav>
@@ -93,27 +93,27 @@ export default function HomePage() {
           className="w-3/4 rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-105 hover:rotate-1 self-start mr-5" />*/}
 
           {/* CAROUSEL(shadcnui) TO DISPLAY IMAGES OF APP */}
-          <Carousel opts={{ loop: true }} className="w-[90%] md:w-[80%]">
+          <Carousel opts={{ loop: true }} className="w-[90%] md:w-[80%] shadow-3xl border border-gray-300 rounded-lg">
             <CarouselContent>
               {/* LIST OF IMAGES OF THE APP */}
               {/* TBC - make sure all images are the same proportions. the carousell will adjust based on the largest image's dimensions. */}
               <CarouselItem>
                 <img
-                  src="https://media.gettyimages.com/id/1410538853/photo/young-man-in-the-public-park.jpg?s=612x612&w=gi&k=20&c=EpcwID8Bfxufrodoyo_x10JgFcnkPNuShJuJHRZkIlM="
+                  src="showcase_1.png"
                   alt="Example"
                   className="rounded-lg shadow-lg w-full h-auto"
                 ></img>
               </CarouselItem>
               <CarouselItem>
                 <img
-                  src="https://media.gettyimages.com/id/1410538853/photo/young-man-in-the-public-park.jpg?s=612x612&w=gi&k=20&c=EpcwID8Bfxufrodoyo_x10JgFcnkPNuShJuJHRZkIlM="
+                  src="showcase_2.png"
                   alt="Example"
                   className="rounded-lg shadow-lg w-full h-auto"
                 ></img>
               </CarouselItem>
               <CarouselItem>
                 <img
-                  src="https://media.gettyimages.com/id/1410538853/photo/young-man-in-the-public-park.jpg?s=612x612&w=gi&k=20&c=EpcwID8Bfxufrodoyo_x10JgFcnkPNuShJuJHRZkIlM="
+                  src="showcase_3.png"
                   alt="Example"
                   className="rounded-lg shadow-lg w-full h-auto"
                 ></img>
@@ -143,7 +143,7 @@ export default function HomePage() {
           </TabsList>
           <TabsContent value="personal" className="w-full flex justify-center">
             <section
-              className="w-screen bg-slate-200 flex justify-center items-center h-[75vh] min-h-[500px] text-white text-4xl font-bold py-6"
+              className="w-screen bg-slate-100 flex justify-center items-center h-[75vh] min-h-[500px] text-white text-4xl font-bold py-6"
               style={{
                 backgroundImage:
                   "url(/landing_page_jobseekers_bg.png)",
@@ -160,16 +160,21 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-left text-lg mr-2 max-w-3xl">
-                    PLACEHOLDER: text that will waffle about the app for users,
-                    maybe including some bullet points. As a Kings student, you
-                    have exclusive access to an unparalleled range of activities
-                    to enjoy around your studies and enrich your experience.
-                    These extracurricular activities are a great way to meet new
-                    people, develop skills, gain experience and make a
-                    difference. Kings Edge: extracurricular activities and
-                    events available to all students Kings Start-up Accelerator:
-                    take your ideas and ventures to the next level Volunteering
-                    opportunities at Kings.
+                    Find job positions tailored precisely to your skills and interests
+                    within minutes, simply by signing up and uploading your CV. 
+                    Our growing catalogue of extensive options is guaranteed to have
+                    a range of options to your liking.
+                    <br/><br/>
+                    With an account on Connect, employers are able to discover your skills.
+                    If you're unsure exactly where you want life to take you, let the
+                    career you never knew you needed find you instead.
+                    <br/><br/>
+                    Applying has never been easier with everything in one place. Explore
+                    open listings, apply within minutes, and track pending applications
+                    all without even leaving the website.
+                    <br/><br/>
+                    Connect is free and open to anyone - whether it's your first internship
+                    or your final stop. Sign up now to find that next step.
                   </p>
                 </CardContent>
               </Card>
@@ -177,7 +182,7 @@ export default function HomePage() {
           </TabsContent>
           <TabsContent value="business" className="w-full flex justify-center">
             <section
-              className="w-screen bg-slate-300 flex justify-center items-center h-[75vh] min-h-[500px] text-white text-4xl font-bold py-6"
+              className="w-screen bg-slate-100 flex justify-center items-center h-[75vh] min-h-[500px] text-white text-4xl font-bold py-6"
               style={{
                 backgroundImage:
                   "url(/landing_page_businesses_bg.png)",
@@ -194,16 +199,20 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-left text-lg mr-2 max-w-3xl">
-                    PLACEHOLDER: text that will waffle about the app for
-                    businesses, maybe including some bullet points. As a Kings
-                    student, you have exclusive access to an unparalleled range
-                    of activities to enjoy around your studies and enrich your
-                    experience. These extracurricular activities are a great way
-                    to meet new people, develop skills, gain experience and make
-                    a difference. Kings Edge: extracurricular activities and
-                    events available to all students Kings Start-up Accelerator:
-                    take your ideas and ventures to the next level Volunteering
-                    opportunities at Kings.
+                    Upload new job listings with ease to advertise them to the people
+                    your firm needs. Connect ensures that your positions will be found by
+                    those most suitable for it.
+                    <br/><br/>
+                    With a simple, user-friendly application process, you'll receive
+                    more than enough interest in your positions. Of course, we'll help you
+                    efficiently filter out the ones you need most.
+                    <br/><br/>
+                    On the dashboard, you'll have access to advanced analytics for your listings,
+                    granting you the information needed to refine your advertising and
+                    grow your business faster than ever.
+                    <br/><br/>
+                    Connect has the perfect companions for your growing business, you just need
+                    to let them discover you. Sign up as an employer today.
                   </p>
                 </CardContent>
               </Card>
@@ -214,7 +223,7 @@ export default function HomePage() {
 
       {/* SECTION 3 - USER REVIEWS AS A CAROUSEL OF CARDS */}
       <section className="bg-slate-300 flex flex-col justify-between items-center w-full h-[75vh] min-h-[500px] text-black text-4xl py-6">
-        <div className="text-center text-2xl">
+        <div className="text-center text-3xl">
           What our users think...
         </div>
         {/* CAROUSEL */}
@@ -261,7 +270,7 @@ export default function HomePage() {
                     &quot;<b>Connect</b> was able to recommend me my dream position within minutes, and got me the offer within days.&quot;
                   </p></CardContent>
                   <CardFooter className="mt-auto"><p className="text-xl">
-                    @mariahc - Job Seeker
+                    @milans - Job Seeker
                   </p></CardFooter>
                 </Card>
               </CarouselItem>
@@ -314,7 +323,7 @@ export default function HomePage() {
             <CarouselNext className="bg-slate-500 absolute -right-10" />
           </Carousel>
         </div>
-        <div className="text-center text-2xl">
+        <div className="text-center text-3xl">
           Join them today for free.
         </div>
       </section>
