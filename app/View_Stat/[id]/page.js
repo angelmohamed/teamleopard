@@ -1,8 +1,9 @@
-import ChartStats from '@/components/ui/chartstats' 
-
+import ChartStats from '@/components/ui/chartstats'
+import ApplicationDonutChart from '@/components/ui/donutchart'
 import { supabase } from '@/lib/supabaseClient'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CheckCircle, XCircle, Clock } from 'lucide-react'
 
 export default async function ViewStatPage({ params }) {
   const jobId = params.id
@@ -28,42 +29,68 @@ export default async function ViewStatPage({ params }) {
   ]
 
   return (
-    <section className="p-6 max-w-4xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Job Application Statistics</h1>
+    <section className="p-6 max-w-5xl mx-auto space-y-6">
+      <h1 className="text-3xl font-bold">📊 Job Application Statistics</h1>
 
-      <Card>
+      {/* Total Applications */}
+      <Card className="border-primary shadow-md">
         <CardHeader>
-          <CardTitle>Overview</CardTitle>
+          <CardTitle className="text-xl text-primary">📥 Total Applications Received</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <div className="flex justify-between">
-            <span>Total Applications</span>
-            <span className="text-foreground font-semibold">{total}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="flex items-center gap-2">
-              <Badge className="bg-green-100 text-green-800">Accepted</Badge>
-            </span>
-            <span className="text-foreground">{accepted}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="flex items-center gap-2">
-              <Badge className="bg-red-100 text-red-800">Rejected</Badge>
-            </span>
-            <span className="text-foreground">{rejected}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="flex items-center gap-2">
-              <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
-            </span>
-            <span className="text-foreground">{pending}</span>
-          </div>
+        <CardContent>
+          <p className="text-4xl font-bold text-primary">{total}</p>
         </CardContent>
       </Card>
 
+      {/* Status Breakdown Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-medium flex items-center gap-2 text-green-600">
+              <CheckCircle className="w-5 h-5" /> Accepted
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-foreground">{accepted}</p>
+            <p className="text-sm text-muted-foreground">Applications accepted</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-medium flex items-center gap-2 text-red-600">
+              <XCircle className="w-5 h-5" /> Rejected
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-foreground">{rejected}</p>
+            <p className="text-sm text-muted-foreground">Applications rejected</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-medium flex items-center gap-2 text-yellow-600">
+              <Clock className="w-5 h-5" /> Pending
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-foreground">{pending}</p>
+            <p className="text-sm text-muted-foreground">Applications pending</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bar Chart */}
       <div className="bg-white border rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Visual Breakdown</h2>
+        <h2 className="text-xl font-semibold mb-4">📈 Visual Breakdown (Bar)</h2>
         <ChartStats chartData={chartData} />
+      </div>
+
+      {/* Donut Chart */}
+      <div className="bg-white border rounded-xl p-6 shadow-sm">
+        <h2 className="text-xl font-semibold mb-4"> % Percentage Breakdown (Donut)</h2>
+        <ApplicationDonutChart data={chartData} />
       </div>
     </section>
   )
