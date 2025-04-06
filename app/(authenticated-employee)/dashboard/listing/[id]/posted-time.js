@@ -6,12 +6,10 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
-//Optional: Hover card to display exact publishing date.
-
 // Handles the displayed text in the Published Time section
 export default function PostedTimeDisplay({published}) {
   // Initialize default message
-  const [postedMessage, setPosted] = useState("Posted recently."); // Default message
+  const [postedMessage, setPosted] = useState("Posted recently"); // Default message
 
   useEffect(() => {
     // Check for valid date
@@ -26,7 +24,7 @@ export default function PostedTimeDisplay({published}) {
 
     // Displays the time since the date was published
     // Text varies with how long its been
-    let displayText = "Posted recently.";
+    let displayText = "Posted recently";
     if (timeDifference > 63072000000) { //>2 years
       displayText = `Posted ${Math.floor(timeDifference / 31536000000)} years ago`;
     } else if (timeDifference > 31536000000) { //>1 year
