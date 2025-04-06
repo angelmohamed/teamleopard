@@ -203,6 +203,17 @@ export default function ApplicationForm() {
       return;
     }
   
+    //send notification
+    const { error: notiError } = await supabase.from("Notifications").insert([
+      {
+        employee_receiver_id: user.id,
+        title: "Application submitted.",
+        content: ("You have successfully applied to the position of " + job.title + ". You can track this application in the 'My Applications' tab."),
+        link: ("/dashboard/listing/" + id), //TODO: change to application page
+      },
+    ]);
+    if (notiError) console.log("Notification error: ", notiError);
+
     setSubmitted(true);
     setLoadingSubmission(false);
   };

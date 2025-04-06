@@ -104,6 +104,17 @@ export default function EmployeeSignup() {
 
       if (employeeError) throw employeeError;
 
+      //send starter notification
+      const { error: notiError } = await supabase.from("Notifications").insert([
+        {
+          employee_receiver_id: userId,
+          title: "Welcome to Connect.",
+          content: "Before you begin, we recommend uploading your CV in Resume IQ. After that, you're all set!",
+          link: "/resume-iq",
+        },
+      ]);
+      if (notiError) console.log("Notification error: ", notiError);
+
       setSuccess("Account created successfully! Please log in.");
       setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
