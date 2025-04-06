@@ -52,16 +52,20 @@ export default function EditProfile() {
       setPhoneNum(data.phone_num || "");
       setBio(data.bio || "");
 
-      const { data: list } = await supabase.storage.from("cv-uploads").list(`cv/${user.id}`);
-
-      if (list && list.length > 0) {
-        const file = list[0];
+      //fetch cv attached to this user
+      const { data: cvData, error: cvError } = await supabase
+        .from("CVs")
+        .select("file_name, updated_at")
+        .eq("employee_id", user.id)
+        .single();
+      if (cvData && !cvError) {
+        const filePath = `cv/${user.id}/${cvData.file_name}`
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from("cv-uploads")
-          .createSignedUrl(`cv/${user.id}/${file.name}`, 60 * 60);
+          .createSignedUrl(filePath, 60 * 60);
 
         if (!signedUrlError) {
-          setCvInfo({ name: file.name, uploadedAt: file.updated_at, url: signedUrlData.signedUrl });
+          setCvInfo({ name: cvData.file_name, uploadedAt: cvData.updated_at, url: signedUrlData.signedUrl });
         }
       }
     };
