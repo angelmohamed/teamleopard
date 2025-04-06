@@ -427,7 +427,7 @@ export default function CompanyDashboard() {
               <Button
                 className="w-full bg-blue-500 text-white py-2 rounded-md"
                 onClick={() =>
-                  window.location.href = `/company-dashboard/${id}/edit-profile`
+                  window.location.href = `/edit-company-profile`
                 }
               >
                 Update Profile
