@@ -93,29 +93,73 @@ export default function CompanyDashboard() {
 
   // 4️⃣ (Unchanged) Job Postings use the param-based ID 
   //     if your DB expects "company_ID" to match the route
-  const fetchJobListings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("Job_Posting")
-        .select("*")
-        .eq("company_ID", id) 
-        .order("posted_at", { ascending: false });
+  // const fetchJobListings = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from("Job_Posting")
+  //       .select("*")
+  //       .eq("company_ID", id) 
+  //       .order("posted_at", { ascending: false });
 
-      if (error) {
-        throw error;
-      }
-      setJobListings(data);
-    } catch (err) {
-      console.error("Error fetching job listings:", err.message);
+  //     if (error) {
+  //       throw error;
+  //     }
+  //     setJobListings(data);
+  //   } catch (err) {
+  //     console.error("Error fetching job listings:", err.message);
+  //   }
+  // };
+
+  const fetchJobListings = async () => {
+    if (!user) return;
+  
+    const { data, error } = await supabase
+      .from("Job_Posting")
+      .select("*") // simpler, flat structure
+      .eq("company_ID", user.id)
+      .order("posted_at", { ascending: false });
+  
+    if (error) {
+      console.error("❌ Supabase fetch error:", error);
+      return;
     }
+  
+    console.log("✅ Raw job postings:", data); // Check this in your browser dev tools
+  
+    // Format data for your cards
+    const formatted = data.map((job) => ({
+      posting_id: job.posting_id,
+      title: job.title,
+      location: job.location,
+      views: job.views ?? 0,
+      status: job.status || "open",
+      company_name: "",        // omit for now – no join
+      applicants: 0,           // omit for now – no join
+    }));
+  
+    setJobListings(formatted);
   };
+  
+  
+  
+  
+
+  // useEffect(() => {
+  //   if (id) {
+  //     fetchJobListings();
+  //   }
+  // }, [id]);
+
 
   useEffect(() => {
-    if (id) {
+    if (user) {
+      console.log("👤 Logged-in user ID:", user.id); // ✅ Add this line
       fetchJobListings();
     }
-  }, [id]);
-
+  }, [user]);
+  
+  
+  
   // Create a new job posting, referencing param-based "id"
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -205,6 +249,7 @@ export default function CompanyDashboard() {
       ['clean'] // reset formatting
     ],
   };
+  console.log("📋 jobListings state in render:", jobListings);
 
   return (
     <main className="flex flex-col gap-6 p-6">
@@ -220,6 +265,7 @@ export default function CompanyDashboard() {
               <CardTitle>Overview</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
               <div className="text-center">
                 <p className="text-2xl font-bold">12 Days</p>
                 <p className="text-sm text-gray-500">
@@ -247,13 +293,43 @@ export default function CompanyDashboard() {
 
           {/* Vacancy Start Chart (Placeholder) */}
           <Card>
-            <CardHeader>
-              <CardTitle>Job Vacancy Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>📊 Chart Goes Here</p>
-            </CardContent>
-          </Card>
+  <CardHeader>
+    <CardTitle>Job Vacancy Trends</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {/* Optional chart placeholder */}
+    <p className="mb-4">📊 Chart Goes Here</p>
+    {jobListings.length === 0 ? (
+  <p className="text-sm text-muted-foreground">You haven’t posted any jobs yet.</p>
+) : (
+  <div className="flex gap-4 overflow-x-auto pb-2">
+    {jobListings.map((job) => (
+      <Card
+        key={job.posting_id}
+        className="min-w-[240px] cursor-pointer hover:shadow-lg transition"
+      >
+        <CardContent className="p-4">
+          <h4 className="font-semibold">{job.title}</h4>
+          {/* <p className="text-sm text-muted-foreground">{job.company_name}</p> */}
+          
+          <p className="text-xs">{job.location}</p>
+          <p className="text-xs mt-2">👁 {job.views} views</p>
+          <p className="text-xs">📝 {job.applicants} applicants</p>
+          <div className="text-right mt-2">
+        <Link href={`/company-dashboard/stats/${job.posting_id}`}>
+          <Button variant="outline" className="text-sm w-full">
+            📊 View Stats
+          </Button>
+        </Link>
+      </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+)}
+
+  </CardContent>
+</Card>
 
           {/* Job Posting Form */}
           <div className="w-full bg-white p-6">
