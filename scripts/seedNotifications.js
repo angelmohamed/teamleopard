@@ -43,20 +43,31 @@ async function seedNotifications() {
   const employeeNotis = Array.from({ length: 30 }, () => ({
     employee_receiver_id: faker.helpers.arrayElement(employees).id, // Assign random receiving user
     created_at: new Date(),
-    title: faker.helpers.arrayElement([ //random noti titles
+    title: faker.helpers.arrayElement([
+      //random noti titles
       "Application successful.",
       "New message.",
       "Settings changed.",
       "Interview scheduled.",
     ]),
-    content: faker.helpers.arrayElement([ //random noti content - wont necessarily match title
-      "Your application to " + faker.helpers.arrayElement(jobs).title + " has been accepted!",
-      "Unfortunately, your application to " + faker.helpers.arrayElement(jobs).title, " has been rejected.",
-      "Your application to " + faker.helpers.arrayElement(jobs).title + " has been sent.",
-      "Your interview for "  + faker.helpers.arrayElement(jobs).title + " has been scheduled.",
+    content: faker.helpers.arrayElement([
+      //random noti content - wont necessarily match title
+      "Your application to " +
+        faker.helpers.arrayElement(jobs).title +
+        " has been accepted!",
+      "Unfortunately, your application to " +
+        faker.helpers.arrayElement(jobs).title,
+      " has been rejected.",
+      "Your application to " +
+        faker.helpers.arrayElement(jobs).title +
+        " has been sent.",
+      "Your interview for " +
+        faker.helpers.arrayElement(jobs).title +
+        " has been scheduled.",
       "Click to see more details.",
     ]),
-    link: faker.helpers.arrayElement([ //either the dashboard or a random job
+    link: faker.helpers.arrayElement([
+      //either the dashboard or a random job
       "/dashboard",
       "/dashboard/listing/" + faker.helpers.arrayElement(jobs).id,
       "/apply/" + faker.helpers.arrayElement(jobs).id,
@@ -68,7 +79,8 @@ async function seedNotifications() {
   const employerNotis = Array.from({ length: 30 }, () => ({
     employer_receiver_id: faker.helpers.arrayElement(jobs).company_ID, // Assign random receiving user (note that only employers with a job listing can be picked)
     created_at: new Date(),
-    title: faker.helpers.arrayElement([ //random noti titles (employer dashboard makes use of emojis)
+    title: faker.helpers.arrayElement([
+      //random noti titles (employer dashboard makes use of emojis)
       "📅",
       "🟢",
       "🟡",
@@ -76,12 +88,21 @@ async function seedNotifications() {
       "👋",
       "❗",
     ]),
-    content: faker.helpers.arrayElement([ //random noti content - wont necessarily match title
-      faker.helpers.arrayElement(employees).first_name + " has applied for " + faker.helpers.arrayElement(jobs).title + ".",
-      "Interview scheduled with " + faker.helpers.arrayElement(employees).first_name,
-      "Interview date with " + faker.helpers.arrayElement(employees).first_name + " has been rescheduled.",
+    content: faker.helpers.arrayElement([
+      //random noti content - wont necessarily match title
+      faker.helpers.arrayElement(employees).first_name +
+        " has applied for " +
+        faker.helpers.arrayElement(jobs).title +
+        ".",
+      "Interview scheduled with " +
+        faker.helpers.arrayElement(employees).first_name,
+      "Interview date with " +
+        faker.helpers.arrayElement(employees).first_name +
+        " has been rescheduled.",
       "Your profile settings have been updated.",
-      "The deadline for " + faker.helpers.arrayElement(jobs).title + " has now passed.",
+      "The deadline for " +
+        faker.helpers.arrayElement(jobs).title +
+        " has now passed.",
       "Message from " + faker.helpers.arrayElement(employees).first_name + ".",
     ]),
     link: "/company-dashboard", //simpler
@@ -89,7 +110,9 @@ async function seedNotifications() {
     hidden: false, //don't want them to be hidden otherwise theres no point in making them
   }));
 
-  const { error } = await supabase.from("Notifications").insert(...employeeNotis, ...employerNotis); //send both
+  const { error } = await supabase
+    .from("Notifications")
+    .insert(...employeeNotis, ...employerNotis); //send both
 
   if (error) {
     console.error("❌ Error seeding notificaitons:", error);

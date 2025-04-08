@@ -49,16 +49,12 @@ function useAuth() {
 }
 
 export default function CompanyDashboard() {
-  // 2️⃣ Auth-based user instead of relying on the param
   const { user, authLoading } = useAuth();
-
   const param = useParams();
-  const id = param.id; // ⬅ Still used for job postings, but NOT for employer data
+  const id = param.id;
 
-  //const [expanded, setExpanded] = useState(false); dont need this anymore
   const [company, setCompany] = useState(null);
 
-  // Form states
   const [jobTitle, setJobTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -71,19 +67,17 @@ export default function CompanyDashboard() {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Job listings
   const [jobListings, setJobListings] = useState([]);
 
-  // 3️⃣ Fetch the Employer row by user.id (session-based), not param
   useEffect(() => {
-    if (!user) return; // If user is null, skip for now
+    if (!user) return;
 
     const fetchCompanyData = async () => {
       try {
         const { data, error } = await supabase
           .from("Employer")
           .select("company_name, company_description")
-          .eq("id", user.id) // Employer table uses the same UUID as Auth user.id
+          .eq("id", user.id)
           .single();
 
         if (error) throw error;
@@ -96,30 +90,41 @@ export default function CompanyDashboard() {
     fetchCompanyData();
   }, [user]);
 
-  // 4️⃣ (Unchanged) Job Postings use the param-based ID
-  //     if your DB expects "company_ID" to match the route
   const fetchJobListings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("Job_Posting")
-        .select("*")
-        .eq("company_ID", id)
-        .order("posted_at", { ascending: false });
+    if (!user) return;
 
-      if (error) {
-        throw error;
-      }
-      setJobListings(data);
-    } catch (err) {
-      console.error("Error fetching job listings:", err.message);
+    const { data, error } = await supabase
+      .from("Job_Posting")
+      .select("*")
+      .eq("company_ID", user.id)
+      .order("posted_at", { ascending: false });
+
+    if (error) {
+      console.error("❌ Supabase fetch error:", error);
+      return;
     }
+
+    console.log("✅ Raw job postings:", data);
+
+    const formatted = data.map((job) => ({
+      posting_id: job.posting_id,
+      title: job.title,
+      location: job.location,
+      views: job.views ?? 0,
+      status: job.status || "open",
+      company_name: "",
+      applicants: 0,
+    }));
+
+    setJobListings(formatted);
   };
 
   useEffect(() => {
-    if (id) {
+    if (user) {
+      console.log("👤 Logged-in user ID:", user.id);
       fetchJobListings();
     }
-  }, [id]);
+  }, [user]);
 
   // Create a new job posting, referencing param-based "id"
   const handleSubmit = async (e) => {
@@ -253,6 +258,12 @@ export default function CompanyDashboard() {
     "🔵 5 new applications received for Backend Engineer", 
   ];*/
 
+  // 5️⃣ If auth is loading or we haven't loaded company yet, show a fallback
+  if (authLoading) return <p>Loading...</p>;
+
+  // If we didn't fetch a company row yet, also show a basic "Loading..."
+  if (!company) return <p>Loading...</p>;
+
   // modules for reactquill texbox
   const modules = {
     toolbar: [
@@ -262,12 +273,7 @@ export default function CompanyDashboard() {
       ["clean"], // reset formatting
     ],
   };
-
-  // 5️⃣ If auth is loading or we haven't loaded company yet, show a fallback
-  if (authLoading) return <p>Loading...</p>;
-
-  // If we didn't fetch a company row yet, also show a basic "Loading..."
-  if (!company) return <p>Loading...</p>;
+  console.log("📋 jobListings state in render:", jobListings);
 
   return (
     <main className="flex flex-col gap-6 p-6">
@@ -314,7 +320,45 @@ export default function CompanyDashboard() {
               <CardTitle>Job Vacancy Trends</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>📊 Chart Goes Here</p>
+              {/* Optional chart placeholder */}
+              <p className="mb-4">📊 Chart Goes Here</p>
+              {jobListings.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  You haven’t posted any jobs yet.
+                </p>
+              ) : (
+                <div className="flex gap-4 overflow-x-auto pb-2">
+                  {jobListings.map((job) => (
+                    <Card
+                      key={job.posting_id}
+                      className="min-w-[240px] cursor-pointer hover:shadow-lg transition"
+                    >
+                      <CardContent className="p-4">
+                        <h4 className="font-semibold">{job.title}</h4>
+                        {/* <p className="text-sm text-muted-foreground">{job.company_name}</p> */}
+
+                        <p className="text-xs">{job.location}</p>
+                        <p className="text-xs mt-2">👁 {job.views} views</p>
+                        <p className="text-xs">
+                          📝 {job.applicants} applicants
+                        </p>
+                        <div className="text-right mt-2">
+                          <Link
+                            href={`/company-dashboard/stats/${job.posting_id}`}
+                          >
+                            <Button
+                              variant="outline"
+                              className="text-sm w-full"
+                            >
+                              📊 View Stats
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -406,7 +450,6 @@ export default function CompanyDashboard() {
                         rows="8"
                       />
                     </div>*/}
-
                     <div>
                       <Label htmlFor="description">Description</Label>
                       <ReactQuill

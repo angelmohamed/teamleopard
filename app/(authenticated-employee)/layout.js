@@ -5,14 +5,21 @@ import Link from "next/link";
 import { useEffect, useState, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Bell, User, LogOut, LayoutDashboard, MoveLeft, MoveRight } from "lucide-react";
+import {
+  Bell,
+  User,
+  LogOut,
+  LayoutDashboard,
+  MoveLeft,
+  MoveRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation";
 import NotificationCard from "./notification";
 import { Label } from "recharts";
 
@@ -27,7 +34,8 @@ export function useAuth() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const { data: authData, error: authError } =
+        await supabase.auth.getUser();
       if (authError || !authData?.user) {
         router.replace("/login");
         return;
@@ -54,7 +62,6 @@ export function useAuth() {
 
     fetchUser();
   }, [router]);
-
 
   return { user, loading };
 }
@@ -99,21 +106,23 @@ export default function RootLayout({ children }) {
       .select(`*`)
       .eq("employee_receiver_id", user.id)
       .eq("hidden", false) //hide hidden notis
-      .order('created_at', { ascending: false }); //newest notis first
+      .order("created_at", { ascending: false }); //newest notis first
     //console.log("Notifications data:", data, "Error:", error);
     if (!error && data) {
       setNotificationList(data);
-      setUnreadNotis(data.some(notification => notification.read === false)); //check for unread notifications
+      setUnreadNotis(data.some((notification) => notification.read === false)); //check for unread notifications
     }
     setLoadingNotis(false);
   };
 
-  useEffect(() => { //run when user changes
+  useEffect(() => {
+    //run when user changes
     if (!user) return;
     fetchNotifications();
   }, [user]);
 
-  useEffect(() => { //run when notifications list changes
+  useEffect(() => {
+    //run when notifications list changes
     if (notificationList.length > 0) {
       handleChangePage(0); //0 just refreshes the status of pages
     }
@@ -125,7 +134,7 @@ export default function RootLayout({ children }) {
       prev.map((notification) => ({ ...notification, read: true }))
     );
     setUnreadNotis(false);
-  }
+  };
 
   //mark all notifications as read in the database
   const handleMarkReadDB = async () => {
@@ -145,8 +154,8 @@ export default function RootLayout({ children }) {
     const newPage = notiPage + delta;
     setNotiPage(newPage);
     setPrevPage(newPage != 1);
-    setNextPage((newPage * 3) < notificationList.length);
-  }
+    setNextPage(newPage * 3 < notificationList.length);
+  };
 
   if (loading) {
     return <p className="text-center text-gray-600 mt-10">Loading...</p>;
@@ -179,10 +188,7 @@ export default function RootLayout({ children }) {
                   <div className="relative">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                        >
+                        <Button variant="ghost" size="icon">
                           <Bell size={28} />
                           {/* unread notis icon */}
                           {unreadNotis && (
@@ -192,49 +198,83 @@ export default function RootLayout({ children }) {
                       </PopoverTrigger>
                       <PopoverContent className="mt-2 w-auto items-center bg-white shadow-md rounded-md border p-2">
                         {loadingNotis ? (
-                          <p className="text-sm text-black text-center">Loading...</p>
-                        ) : (
-                          notificationList.length > 0 ? (
-                            <div>
-                              <div className="flex flex-row justify-between items-center">
-                                <h1 className="text-2xl underline font-semibold mb-1 ml-1">Notifications</h1>
-                                <Button onClick={() => {handleMarkReadLocal(); handleMarkReadDB();}} variant="outline" className="text-xs mb-1">
-                                  Mark all as read
-                                </Button>
-                              </div>
-                              {/* display 3 notifications at once */}
-                              <div className="space-y-2">
-                                {[3, 2, 1].map((i) => (
-                                  <NotificationCard 
-                                    key={i}
-                                    initNotification={notificationList[(notiPage * 3) - i]}  
-                                    onUpdateNotification={(updatedNoti) => {
-                                      //this function updates the fetched data in layout.js to remain consistent with the cards
-                                      setNotificationList((prevList) => {
-                                        const newList = prevList.map((n) =>
-                                          n.id === updatedNoti.id ? updatedNoti : n
-                                        );
-                                        setUnreadNotis(newList.some(notification => notification.read === false));
-                                        return newList;
-                                      });
-                                    }}
-                                  />
-                                ))}
-                                {/* arrows to go between pages */}
-                              </div>
-                              <div className="flex items-center justify-center mt-1 space-x-6">
-                                <Button onClick={() => {handleChangePage(-1 /*-1 page*/)}} disabled={!prevPage} variant="outline">
-                                  <MoveLeft size={20}/>
-                                </Button>
-                                <h1 className="text-xl font-semibold mb-1 w-12 text-center">{notiPage}</h1>
-                                <Button onClick={() => {handleChangePage(1 /*+1 page*/)}} disabled={!nextPage} variant="outline">
-                                  <MoveRight size={20}/>
-                                </Button>
-                              </div>
+                          <p className="text-sm text-black text-center">
+                            Loading...
+                          </p>
+                        ) : notificationList.length > 0 ? (
+                          <div>
+                            <div className="flex flex-row justify-between items-center">
+                              <h1 className="text-2xl underline font-semibold mb-1 ml-1">
+                                Notifications
+                              </h1>
+                              <Button
+                                onClick={() => {
+                                  handleMarkReadLocal();
+                                  handleMarkReadDB();
+                                }}
+                                variant="outline"
+                                className="text-xs mb-1"
+                              >
+                                Mark all as read
+                              </Button>
                             </div>
-                          ) : (
-                            <p className="text-sm text-gray text-center">All quiet here.</p>
-                          )
+                            {/* display 3 notifications at once */}
+                            <div className="space-y-2">
+                              {[3, 2, 1].map((i) => (
+                                <NotificationCard
+                                  key={i}
+                                  initNotification={
+                                    notificationList[notiPage * 3 - i]
+                                  }
+                                  onUpdateNotification={(updatedNoti) => {
+                                    //this function updates the fetched data in layout.js to remain consistent with the cards
+                                    setNotificationList((prevList) => {
+                                      const newList = prevList.map((n) =>
+                                        n.id === updatedNoti.id
+                                          ? updatedNoti
+                                          : n
+                                      );
+                                      setUnreadNotis(
+                                        newList.some(
+                                          (notification) =>
+                                            notification.read === false
+                                        )
+                                      );
+                                      return newList;
+                                    });
+                                  }}
+                                />
+                              ))}
+                              {/* arrows to go between pages */}
+                            </div>
+                            <div className="flex items-center justify-center mt-1 space-x-6">
+                              <Button
+                                onClick={() => {
+                                  handleChangePage(-1 /*-1 page*/);
+                                }}
+                                disabled={!prevPage}
+                                variant="outline"
+                              >
+                                <MoveLeft size={20} />
+                              </Button>
+                              <h1 className="text-xl font-semibold mb-1 w-12 text-center">
+                                {notiPage}
+                              </h1>
+                              <Button
+                                onClick={() => {
+                                  handleChangePage(1 /*+1 page*/);
+                                }}
+                                disabled={!nextPage}
+                                variant="outline"
+                              >
+                                <MoveRight size={20} />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray text-center">
+                            All quiet here.
+                          </p>
                         )}
                       </PopoverContent>
                     </Popover>
@@ -287,21 +327,6 @@ export default function RootLayout({ children }) {
                     </Popover>
                   </div>
                 </div>
-
-                {/* Divider - Hidden on Mobile */}
-                <div className="hidden md:block h-6 border-l"></div>
-
-                {/* Resume IQ Link */}
-                <Link
-                  href="/resume-iq"
-                  className={
-                    pathname === "/resume-iq"
-                      ? "hidden md:block text-[#4259A8] hover:text-black text-sm font-medium"
-                      : "hidden md:block text-gray-600 hover:text-black text-sm font-medium"
-                  }
-                >
-                  Resume IQ™
-                </Link>
               </div>
             </div>
           </nav>

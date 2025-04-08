@@ -109,7 +109,7 @@ export default function EmployeeSignup() {
         {
           employee_receiver_id: userId,
           title: "Welcome to Connect.",
-          content: "Before you begin, we recommend uploading your CV in Resume IQ. After that, you're all set!",
+          content: "You're in good hands!",
           link: "/resume-iq",
         },
       ]);
