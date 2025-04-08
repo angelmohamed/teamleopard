@@ -13,111 +13,89 @@ async function seedNotifications() {
   // Fetch employee IDs
   const { data: employees, error: employeeError } = await supabase
     .from("Employee")
-    .select("id, first_name"); //relevant info for realistic notis
+    .select("id, first_name");
 
-  if (employeeError) {
-    console.error("❌ Error fetching employers:", employeeError);
-    return;
-  }
-
-  if (!employees.length) {
-    console.error("⚠️ No employees found! Notifications cannot be seeded.");
+  if (employeeError || !employees?.length) {
+    console.error("❌ Error fetching employees:", employeeError);
     return;
   }
 
   // Fetch job listings
   const { data: jobs, error: jobError } = await supabase
     .from("Job_Posting")
-    .select("id, title, company_ID"); //relevant info for realistic notis
+    .select("id, title, company_ID");
 
-  if (jobError) {
-    console.error("❌ Error fetching employers:", jobError);
+  if (jobError || !jobs?.length) {
+    console.error("❌ Error fetching jobs:", jobError);
     return;
   }
 
-  if (!jobs.length) {
-    console.error("⚠️ No jobs found! Notifications cannot be seeded.");
-    return;
-  }
+  // Employee Notifications (1+ per employee)
+  const employeeNotis = employees.flatMap((emp) =>
+    Array.from({ length: 2 }, () => ({
+      employee_receiver_id: emp.id,
+      created_at: new Date(),
+      title: faker.helpers.arrayElement([
+        "Application successful.",
+        "New message.",
+        "Interview scheduled.",
+        "Status update.",
+      ]),
+      content: faker.helpers.arrayElement([
+        `Your application to ${
+          faker.helpers.arrayElement(jobs).title
+        } has been received.`,
+        `You have a new message regarding ${
+          faker.helpers.arrayElement(jobs).title
+        }.`,
+        `Interview scheduled for ${faker.helpers.arrayElement(jobs).title}.`,
+        `Click here to check your application status.`,
+      ]),
+      link: faker.helpers.arrayElement([
+        "/dashboard",
+        `/dashboard/listing/${faker.helpers.arrayElement(jobs).id}`,
+        `/apply/${faker.helpers.arrayElement(jobs).id}`,
+      ]),
+      read: false,
+      hidden: false,
+    }))
+  );
 
-  const employeeNotis = Array.from({ length: 30 }, () => ({
-    employee_receiver_id: faker.helpers.arrayElement(employees).id, // Assign random receiving user
-    created_at: new Date(),
-    title: faker.helpers.arrayElement([
-      //random noti titles
-      "Application successful.",
-      "New message.",
-      "Settings changed.",
-      "Interview scheduled.",
-    ]),
-    content: faker.helpers.arrayElement([
-      //random noti content - wont necessarily match title
-      "Your application to " +
-        faker.helpers.arrayElement(jobs).title +
-        " has been accepted!",
-      "Unfortunately, your application to " +
-        faker.helpers.arrayElement(jobs).title,
-      " has been rejected.",
-      "Your application to " +
-        faker.helpers.arrayElement(jobs).title +
-        " has been sent.",
-      "Your interview for " +
-        faker.helpers.arrayElement(jobs).title +
-        " has been scheduled.",
-      "Click to see more details.",
-    ]),
-    link: faker.helpers.arrayElement([
-      //either the dashboard or a random job
-      "/dashboard",
-      "/dashboard/listing/" + faker.helpers.arrayElement(jobs).id,
-      "/apply/" + faker.helpers.arrayElement(jobs).id,
-    ]),
-    read: faker.datatype.boolean(), //true or false
-    hidden: false, //don't want them to be hidden otherwise theres no point in making them
-  }));
+  // Employer Notifications (1+ per employer with jobs)
+  const employersWithJobs = [...new Set(jobs.map((job) => job.company_ID))];
 
-  const employerNotis = Array.from({ length: 30 }, () => ({
-    employer_receiver_id: faker.helpers.arrayElement(jobs).company_ID, // Assign random receiving user (note that only employers with a job listing can be picked)
-    created_at: new Date(),
-    title: faker.helpers.arrayElement([
-      //random noti titles (employer dashboard makes use of emojis)
-      "📅",
-      "🟢",
-      "🟡",
-      "🔵",
-      "👋",
-      "❗",
-    ]),
-    content: faker.helpers.arrayElement([
-      //random noti content - wont necessarily match title
-      faker.helpers.arrayElement(employees).first_name +
-        " has applied for " +
-        faker.helpers.arrayElement(jobs).title +
-        ".",
-      "Interview scheduled with " +
-        faker.helpers.arrayElement(employees).first_name,
-      "Interview date with " +
-        faker.helpers.arrayElement(employees).first_name +
-        " has been rescheduled.",
-      "Your profile settings have been updated.",
-      "The deadline for " +
-        faker.helpers.arrayElement(jobs).title +
-        " has now passed.",
-      "Message from " + faker.helpers.arrayElement(employees).first_name + ".",
-    ]),
-    link: "/company-dashboard", //simpler
-    read: faker.datatype.boolean(), //true or false
-    hidden: false, //don't want them to be hidden otherwise theres no point in making them
-  }));
+  const employerNotis = employersWithJobs.flatMap((employerId) =>
+    Array.from({ length: 2 }, () => ({
+      employer_receiver_id: employerId,
+      created_at: new Date(),
+      title: faker.helpers.arrayElement(["📬", "📅", "🔔", "📈", "📢"]),
+      content: faker.helpers.arrayElement([
+        `${faker.person.firstName()} just applied to ${
+          faker.helpers.arrayElement(jobs).title
+        }.`,
+        `Interview scheduled with ${faker.person.firstName()}.`,
+        `Job posting update: ${faker.helpers.arrayElement(jobs).title}.`,
+        `Reminder: deadline approaching.`,
+        `New applicant insights available.`,
+      ]),
+      link: "/company-dashboard",
+      read: false,
+      hidden: false,
+    }))
+  );
+
+  const allNotifications = [...employeeNotis, ...employerNotis];
 
   const { error } = await supabase
     .from("Notifications")
-    .insert(...employeeNotis, ...employerNotis); //send both
+    .insert(allNotifications);
 
   if (error) {
-    console.error("❌ Error seeding notificaitons:", error);
+    console.error("❌ Error seeding notifications:", error);
   } else {
-    console.log("✅ Notifications seeding successful!");
+    console.log(
+      `✅ Notifications seeded for ${employees.length} employees and ${employersWithJobs.length} employers.`
+    );
   }
 }
 
