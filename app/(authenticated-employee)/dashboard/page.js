@@ -12,10 +12,10 @@ import { Filter } from "lucide-react";
 export default function JobListings() {
   const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
-  const [savedJobs, setSavedJobs] = useState([]); // Tracks saved jobs
+  const [savedJobs, setSavedJobs] = useState([]);
   const [activeFilters, setActiveFilters] = useState({});
 
-  // 1️⃣ Fetch employee details (username, first_name)
+  // Fetch employee info
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -29,32 +29,24 @@ export default function JobListings() {
     })();
   }, [user]);
 
-  // 2️⃣ Function to fetch saved jobs (called on mount + updates)
+  // Fetch saved jobs with upcoming deadlines
   const fetchSavedJobs = React.useCallback(async () => {
     if (!user) return;
 
-    // Step 1: Get job_posting_ids from "Saved_Jobs"
     const { data, error } = await supabase
       .from("Saved_Jobs")
       .select("job_posting_id")
       .eq("employee_ID", user.id);
 
-    if (error || !data) {
-      console.error("Error fetching saved jobs:", error);
+    if (error || !data || data.length === 0) {
       setSavedJobs([]);
       return;
     }
 
-    if (data.length === 0) {
-      setSavedJobs([]);
-      return;
-    }
-
-    // Step 2: Fetch job titles from "Job_Posting"
     const jobIds = data.map((item) => item.job_posting_id);
     const { data: jobData, error: jobError } = await supabase
       .from("Job_Posting")
-      .select("posting_id, title")
+      .select("posting_id, title, deadline")
       .in("posting_id", jobIds);
 
     if (jobError || !jobData) {
@@ -63,37 +55,37 @@ export default function JobListings() {
       return;
     }
 
-    setSavedJobs(jobData); // => e.g. [ {posting_id, title}, ...]
+    const now = new Date();
+    const validJobs = jobData
+      .filter((job) => job.deadline && new Date(job.deadline) > now)
+      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+    setSavedJobs(validJobs);
   }, [user]);
 
-  // 3️⃣ Use effect to fetch on mount + subscribe to Supabase updates
   useEffect(() => {
     fetchSavedJobs();
 
-    // Realtime listener for Saved_Jobs table
     const subscription = supabase
       .channel("saved_jobs_changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "Saved_Jobs" },
         () => {
-          fetchSavedJobs(); // Fetch updated saved jobs when changes occur
+          fetchSavedJobs();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription); // Cleanup subscription
+      supabase.removeChannel(subscription);
     };
   }, [fetchSavedJobs, user]);
 
-  // 4️⃣ Callback for <JobPostings> to trigger refresh
   const handleSavedJobsChange = async () => {
-    console.log("Refreshing saved jobs..."); // Debugging log
-    await fetchSavedJobs(); // Ensure backend updates reflect in UI
+    await fetchSavedJobs();
   };
 
-  // Handle filter changes from the Filters component
   const handleFilterChange = (filters) => {
     setActiveFilters(filters);
   };
@@ -113,57 +105,84 @@ export default function JobListings() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-6">
-                {/* Mobile filters */}
                 <Filters onFilterChange={handleFilterChange} />
               </SheetContent>
             </Sheet>
           </div>
 
-          {/* Profile Section */}
+          {/* Profile + Saved Jobs + Applications */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Profile */}
             <Card>
               <CardHeader>
                 <CardTitle>Your profile</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 text-sm">
-                  Welcome,{" "}
-                  {employee?.first_name ?? employee?.username ?? "Loading..."}
+                  Welcome, {employee?.first_name ?? employee?.username ?? "Loading..."}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Saved Jobs Section */}
+            {/* Saved Jobs */}
             <Card>
               <CardHeader>
                 <CardTitle>Your saved jobs</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="max-h-64 overflow-y-auto pr-1">
                 {savedJobs.length === 0 ? (
                   <p className="mb-1 text-sm text-gray-600">No saved jobs yet.</p>
                 ) : (
-                  <ul className="list-disc list-inside">
-                    {savedJobs.slice(0, 3).map((job) => (
-                      <li key={job.posting_id}>
-                        <a
-                          href={`/dashboard/listing/${job.posting_id}`}
-                          className="hover:underline mb-1 text-sm text-gray-600"
+                  <ul className="space-y-2">
+                    {savedJobs.map((job) => {
+                      const daysLeft = Math.ceil(
+                        (new Date(job.deadline).getTime() - new Date().getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      );
+                      const isUrgent = daysLeft <= 7;
+
+                      return (
+                        <li
+                          key={job.posting_id}
+                          className="flex items-center justify-between border-b pb-2"
                         >
-                          {job.title}
-                        </a>
-                      </li>
-                    ))}
+                          <a
+                            href={`/dashboard/listing/${job.posting_id}`}
+                            className="hover:underline text-sm text-gray-800 font-medium"
+                          >
+                            {job.title}
+                          </a>
+                          <span
+                            className={`flex items-center text-xs font-medium px-2 py-1 rounded-full ${
+                              isUrgent
+                                ? "bg-red-100 text-red-600"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            <svg
+                              className="w-4 h-4 mr-1"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 8v4l3 1m6-1a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            {daysLeft} day{daysLeft !== 1 ? "s" : ""} left
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
-                )}
-                {savedJobs.length > 3 && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    And {savedJobs.length - 3} more...
-                  </p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Applications Section */}
+            {/* Applications */}
             <Card>
               <CardHeader>
                 <CardTitle>Your applications</CardTitle>
@@ -176,8 +195,11 @@ export default function JobListings() {
 
           <div className="border-b my-6" />
 
-          {/* Pass the callback and filters to <JobPostings> */}
-          <JobPostings onSavedJobsChange={handleSavedJobsChange} filters={activeFilters} />
+          {/* Job Listings */}
+          <JobPostings
+            onSavedJobsChange={handleSavedJobsChange}
+            filters={activeFilters}
+          />
         </main>
       </div>
     </div>
