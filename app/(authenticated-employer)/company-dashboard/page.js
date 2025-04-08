@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 // We keep your param usage for job posting ID, but won't use it for fetching Employer info
 import { useParams } from "next/navigation";
@@ -50,7 +51,7 @@ export default function CompanyDashboard() {
   const param = useParams();
   const id = param.id; // ⬅ Still used for job postings, but NOT for employer data
 
-  const [expanded, setExpanded] = useState(false);
+  //const [expanded, setExpanded] = useState(false); dont need this anymore
   const [company, setCompany] = useState(null);
 
   // Form states
@@ -180,21 +181,68 @@ export default function CompanyDashboard() {
     }
   };
 
-  // 5️⃣ If auth is loading or we haven't loaded company yet, show a fallback
-  if (authLoading) return <p>Loading...</p>;
+  const [notificationList, setNotificationList] = useState([]);
+  const [notiLimit, setNotiLimit] = useState(4);
+  const [loadingNotis, setLoadingNotis] = useState(true);
 
-  // If we didn't fetch a company row yet, also show a basic "Loading..."
-  if (!company) return <p>Loading...</p>;
+  useEffect(() => { 
+    if (!user) return;
+    //fetch notification info
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from("Notifications")
+        .select(`*`)
+        .eq("employer_receiver_id", user.id)
+        .eq("hidden", false) //hide hidden notis
+        .order('created_at', { ascending: false }) //newest notis first
+      //console.log("Notifications data:", data, "Error:", error);
+      if (!error && data) {
+        setNotificationList(data);
+      }
+      setLoadingNotis(false);
+    };
+
+    fetchNotifications();
+  }, [user, notiLimit]); //run when user or limit changes
+
+  // Published Date Formatting for notifications
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, // 24-hour
+      timeZone: "UTC",
+    }).format(date);
+  };
+
+  const formatDateShort = (isoString) => {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  };
+
+  // Increase 'notiLimit' by 4 to load 4 more notificaitons
+  const handleLoadMoreNotis = () => {
+    setNotiLimit((prev) => prev + 4);
+    console.log(notiLimit);
+  };
 
   // Mocked recent activity
-  const recentActivities = [
+  /*const recentActivities = [
     "🟢 Jane Doe has applied for Frontend Developer",
     "🟡 Interview scheduled for Nash Shook",
     "🔵 3 new applications received for UX Designer",
     "🔵 4 new applications received for Senior VP",
     "🔵 3 new applications received for Toilet Opener",
     "🔵 5 new applications received for Backend Engineer", 
-  ];
+  ];*/
 
   // modules for reactquill texbox
   const modules = {
@@ -205,6 +253,12 @@ export default function CompanyDashboard() {
       ['clean'] // reset formatting
     ],
   };
+
+  // 5️⃣ If auth is loading or we haven't loaded company yet, show a fallback
+  if (authLoading) return <p>Loading...</p>;
+
+  // If we didn't fetch a company row yet, also show a basic "Loading..."
+  if (!company) return <p>Loading...</p>;
 
   return (
     <main className="flex flex-col gap-6 p-6">
@@ -441,26 +495,38 @@ export default function CompanyDashboard() {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div
-                className={`flex flex-col gap-4 ${
-                  expanded ? "" : "max-h-32 overflow-hidden"
-                }`}
-              >
-                {recentActivities.map((activity, index) => (
-                  <p key={index} className="text-sm">
-                    {activity}
-                  </p>
-                ))}
-              </div>
-
-              {recentActivities.length > 5 && (
-                <Button
-                  variant="ghost"
-                  className="mt-2 w-full text-blue-500"
-                  onClick={() => setExpanded(!expanded)}
-                >
-                  {expanded ? "Show Less" : "Show More"}
-                </Button>
+              {loadingNotis ? (
+                <p>Loading...</p>
+              ) : (
+                notificationList.length == 0 ? (
+                  <p>No activity yet.</p>
+                ) : (
+                  <div>
+                    <div className={`flex flex-col gap-4`}>
+                      {notificationList
+                        .slice(0, notiLimit) //limits to notiLimit
+                        .map((notification, index) => (
+                        <Link key={index} href={notification.link}>
+                          <p className="text-sm text-black hover:underline">
+                            {notification.title} {notification.content}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(notification.created_at)} UTC.
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                    {notificationList.length > notiLimit && (
+                      <Button
+                        variant="ghost"
+                        className="mt-2 w-full text-blue-500"
+                        onClick={() => handleLoadMoreNotis()}
+                      >
+                        Show More
+                      </Button>
+                    )}
+                  </div>
+                )
               )}
             </CardContent>
           </Card>
