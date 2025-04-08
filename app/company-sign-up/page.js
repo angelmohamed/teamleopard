@@ -78,6 +78,17 @@ export default function CompanySignup() {
     if (employerError) {
       setError(employerError.message);
     } else {
+      //send starter notification
+      const { error: notiError } = await supabase.from("Notifications").insert([
+        {
+          employer_receiver_id: userId,
+          title: "👋",
+          content: "Welcome to Connect.",
+          link: "/company-dashboard",
+        },
+      ]);
+      if (notiError) console.log("Notification error: ", notiError);
+
       setSuccess("Account created successfully!");
       // Optionally, redirect the user after signup
       // setTimeout(() => router.push("/login"), 2000);

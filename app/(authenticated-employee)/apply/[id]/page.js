@@ -64,7 +64,7 @@ export default function ApplicationForm() {
       const { data, error } = await supabase
         .from("Job_Posting")
         .select(`
-          title, location, employment_type, salary_range, expected_skills,
+          title, location, employment_type, salary_range, expected_skills, company_ID,
           Employer (company_name, company_description)`)
         .eq("posting_id", id)
         .single();
@@ -203,7 +203,7 @@ export default function ApplicationForm() {
       return;
     }
   
-    //send notification
+    //send notification to employee
     const { error: notiError } = await supabase.from("Notifications").insert([
       {
         employee_receiver_id: user.id,
@@ -213,6 +213,17 @@ export default function ApplicationForm() {
       },
     ]);
     if (notiError) console.log("Notification error: ", notiError);
+
+    //send notification to employer
+    const { error: notiError2 } = await supabase.from("Notifications").insert([
+      {
+        employer_receiver_id: job.company_ID,
+        title: "🟢",
+        content: (employee.first_name + " has applied for " + job.title + "."),
+        link: "/company-dashboard", //can be a profile page if possible
+      },
+    ]);
+    if (notiError2) console.log("Notification error: ", notiError2);
 
     setSubmitted(true);
     setLoadingSubmission(false);
