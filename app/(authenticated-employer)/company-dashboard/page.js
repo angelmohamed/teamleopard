@@ -9,16 +9,20 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 // We keep your param usage for job posting ID, but won't use it for fetching Employer info
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 // The following are used for React-Quill's dynamic description box
-import dynamic from 'next/dynamic'; //for desc box
-import 'react-quill/dist/quill.snow.css'; //for desc box
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import dynamic from "next/dynamic"; //for desc box
+import "react-quill/dist/quill.snow.css"; //for desc box
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 // 1️⃣ Local `useAuth` hook for session-based user
 function useAuth() {
@@ -92,14 +96,14 @@ export default function CompanyDashboard() {
     fetchCompanyData();
   }, [user]);
 
-  // 4️⃣ (Unchanged) Job Postings use the param-based ID 
+  // 4️⃣ (Unchanged) Job Postings use the param-based ID
   //     if your DB expects "company_ID" to match the route
   const fetchJobListings = async () => {
     try {
       const { data, error } = await supabase
         .from("Job_Posting")
         .select("*")
-        .eq("company_ID", id) 
+        .eq("company_ID", id)
         .order("posted_at", { ascending: false });
 
       if (error) {
@@ -126,8 +130,15 @@ export default function CompanyDashboard() {
 
     try {
       // Basic validation
-      if (!jobTitle.trim() || !description.trim() || !location.trim() || 
-          !employmentType || !salaryRange.trim() || !deadline || !expectedSkills.trim()) {
+      if (
+        !jobTitle.trim() ||
+        !description.trim() ||
+        !location.trim() ||
+        !employmentType ||
+        !salaryRange.trim() ||
+        !deadline ||
+        !expectedSkills.trim()
+      ) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -138,22 +149,20 @@ export default function CompanyDashboard() {
       }
 
       // Create the job posting
-      const { error: insertError } = await supabase
-        .from("Job_Posting")
-        .insert([
-          {
-            title: jobTitle.trim(),
-            description: description.trim(),
-            location: location.trim(),
-            employment_type: employmentType,
-            salary_range: salaryRange.trim(),
-            deadline,
-            expected_skills: expectedSkills.trim(),
-            status,
-            company_ID: user.id,
-            posted_at: new Date().toISOString(),
-          },
-        ]);
+      const { error: insertError } = await supabase.from("Job_Posting").insert([
+        {
+          title: jobTitle.trim(),
+          description: description.trim(),
+          location: location.trim(),
+          employment_type: employmentType,
+          salary_range: salaryRange.trim(),
+          deadline,
+          expected_skills: expectedSkills.trim(),
+          status,
+          company_ID: user.id,
+          posted_at: new Date().toISOString(),
+        },
+      ]);
 
       if (insertError) {
         throw new Error(insertError.message);
@@ -168,9 +177,9 @@ export default function CompanyDashboard() {
       setDeadline("");
       setExpectedSkills("");
       setStatus("open");
-      
+
       setSuccess("Job posted successfully!");
-      
+
       // Refresh job listings
       fetchJobListings();
     } catch (error) {
@@ -185,7 +194,7 @@ export default function CompanyDashboard() {
   const [notiLimit, setNotiLimit] = useState(4);
   const [loadingNotis, setLoadingNotis] = useState(true);
 
-  useEffect(() => { 
+  useEffect(() => {
     if (!user) return;
     //fetch notification info
     const fetchNotifications = async () => {
@@ -194,7 +203,7 @@ export default function CompanyDashboard() {
         .select(`*`)
         .eq("employer_receiver_id", user.id)
         .eq("hidden", false) //hide hidden notis
-        .order('created_at', { ascending: false }) //newest notis first
+        .order("created_at", { ascending: false }); //newest notis first
       //console.log("Notifications data:", data, "Error:", error);
       if (!error && data) {
         setNotificationList(data);
@@ -247,10 +256,10 @@ export default function CompanyDashboard() {
   // modules for reactquill texbox
   const modules = {
     toolbar: [
-      [{ 'size': ['normal', 'large'/*, 'huge'*/] }], // text sizes
-      ['bold', 'italic', 'underline'], // text styles
+      [{ size: ["normal", "large" /*, 'huge'*/] }], // text sizes
+      ["bold", "italic", "underline"], // text styles
       /*[{ 'list': 'ordered' }, { 'list': 'bullet' }],*/ //list options (incompatible?)
-      ['clean'] // reset formatting
+      ["clean"], // reset formatting
     ],
   };
 
@@ -310,7 +319,7 @@ export default function CompanyDashboard() {
           </Card>
 
           {/* Job Posting Form */}
-          <div className="w-full bg-white p-6">
+          <div className="w-full bg-white">
             <Card className="w-full shadow-lg rounded-lg">
               <CardHeader className="text-center border-b pb-4">
                 <CardTitle className="text-2xl font-semibold">
@@ -318,9 +327,15 @@ export default function CompanyDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                {error && <p className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-md">{error}</p>}
+                {error && (
+                  <p className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-md">
+                    {error}
+                  </p>
+                )}
                 {success && (
-                  <p className="text-green-600 text-sm mb-4 p-3 bg-green-50 rounded-md">{success}</p>
+                  <p className="text-green-600 text-sm mb-4 p-3 bg-green-50 rounded-md">
+                    {success}
+                  </p>
                 )}
                 <form onSubmit={handleSubmit}>
                   <div className="grid gap-6">
@@ -391,7 +406,7 @@ export default function CompanyDashboard() {
                         rows="8"
                       />
                     </div>*/}
-                    
+
                     <div>
                       <Label htmlFor="description">Description</Label>
                       <ReactQuill
@@ -401,7 +416,7 @@ export default function CompanyDashboard() {
                         /*onChange={(e) => setDescription(e.target.value)} <- this doesnt work*/
                         modules={modules}
                         placeholder="Detailed job description, responsibilities, and requirements"
-                        style={{ minHeight: '3rem' }}
+                        style={{ minHeight: "3rem" }}
                       />
                     </div>
 
@@ -414,7 +429,7 @@ export default function CompanyDashboard() {
                           value={deadline}
                           onChange={(e) => setDeadline(e.target.value)}
                           required
-                          min={new Date().toISOString().split('T')[0]}
+                          min={new Date().toISOString().split("T")[0]}
                         />
                       </div>
                       <div>
@@ -456,7 +471,7 @@ export default function CompanyDashboard() {
                           Posting Job...
                         </div>
                       ) : (
-                        'Post Job'
+                        "Post Job"
                       )}
                     </Button>
                   </div>
@@ -480,9 +495,7 @@ export default function CompanyDashboard() {
               </p>
               <Button
                 className="w-full bg-blue-500 text-white py-2 rounded-md"
-                onClick={() =>
-                  window.location.href = `/edit-company-profile`
-                }
+                onClick={() => (window.location.href = `/edit-company-profile`)}
               >
                 Update Profile
               </Button>
@@ -497,15 +510,14 @@ export default function CompanyDashboard() {
             <CardContent>
               {loadingNotis ? (
                 <p>Loading...</p>
+              ) : notificationList.length == 0 ? (
+                <p>No activity yet.</p>
               ) : (
-                notificationList.length == 0 ? (
-                  <p>No activity yet.</p>
-                ) : (
-                  <div>
-                    <div className={`flex flex-col gap-4`}>
-                      {notificationList
-                        .slice(0, notiLimit) //limits to notiLimit
-                        .map((notification, index) => (
+                <div>
+                  <div className={`flex flex-col gap-4`}>
+                    {notificationList
+                      .slice(0, notiLimit) //limits to notiLimit
+                      .map((notification, index) => (
                         <Link key={index} href={notification.link}>
                           <p className="text-sm text-black hover:underline">
                             {notification.title} {notification.content}
@@ -515,18 +527,17 @@ export default function CompanyDashboard() {
                           </p>
                         </Link>
                       ))}
-                    </div>
-                    {notificationList.length > notiLimit && (
-                      <Button
-                        variant="ghost"
-                        className="mt-2 w-full text-blue-500"
-                        onClick={() => handleLoadMoreNotis()}
-                      >
-                        Show More
-                      </Button>
-                    )}
                   </div>
-                )
+                  {notificationList.length > notiLimit && (
+                    <Button
+                      variant="ghost"
+                      className="mt-2 w-full text-blue-500"
+                      onClick={() => handleLoadMoreNotis()}
+                    >
+                      Show More
+                    </Button>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
