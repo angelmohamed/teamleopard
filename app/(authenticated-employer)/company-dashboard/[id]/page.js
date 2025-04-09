@@ -406,9 +406,8 @@ export default function CompanyDashboard() {
                           📝 {job.applicants} applicants
                         </p>
                         <div className="text-right mt-2">
-                          <Link
-                            href={`/company-dashboard/stats/${job.posting_id}`}
-                          >
+                        <Link href={`/company-dashboard/${id}/stats/${job.posting_id}`}>
+
                             <Button
                               variant="outline"
                               className="text-sm w-full"

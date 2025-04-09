@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 
 export default async function ViewStatPage({ params }) {
-  const jobId = params.id;
+  const jobId = params.jobId;
 
   const { data: applications, error } = await supabase
     .from("Applications")
