@@ -488,6 +488,21 @@ export default function CompanyDashboard() {
               </Button>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold">View All Applications</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-500">
+                Check all the applications you have received for your job postings.
+              </p>
+              <Link href="/applications" passHref>
+                <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md">
+                  View Applications
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
 
           {/* Recent Activity w/ Show More */}
           <Card>

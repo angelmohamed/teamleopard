@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Filter } from "lucide-react";
+import Link from "next/link"; 
 
 export default function JobListings() {
   const { user } = useAuth();
@@ -168,8 +169,17 @@ export default function JobListings() {
               <CardHeader>
                 <CardTitle>Your applications</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm">Placeholder</p>
+              <CardContent className="flex flex-col space-y-3">
+                <Link href="/requests" passHref>
+                  <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">
+                    Requests
+                  </Button>
+                </Link>
+                <Link href="/applications" passHref>
+                  <Button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded">
+                    All Applications
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
