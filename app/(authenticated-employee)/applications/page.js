@@ -1,3 +1,4 @@
+import React from 'react';
 "use client";
 
 import { useState, useEffect } from "react";
@@ -46,14 +47,14 @@ export default function ApplicationsPage() {
 
       const { error: insertError } = await supabase
         .from("Employee")
-        .insert({
+        .insert([{
           id: userId,
           email: userData.user.email,
           username: userData.user.email.split('@')[0], 
           first_name: firstName, 
           last_name: lastName,
           created_at: new Date().toISOString()
-        });
+        }]);
       
       if (insertError) {
         console.error("Error creating employee record:", insertError);
