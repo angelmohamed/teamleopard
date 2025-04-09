@@ -9,4 +9,3 @@ module.exports = {
     collectCoverageFrom: ["**/*.{js,jsx}", "!**/node_modules/**", "!**/.next/**"],
     coverageReporters: ["html", "text"],
   };
-  
