@@ -112,7 +112,7 @@ export default function Layout({ children }) {
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <a
-                        href="/company-dashboard"
+                        href={user ? `/company-dashboard/${user.id}` : '#'}
                         className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors hover:bg-gray-100 ${pathname === "/company-dashboard"
                             ? "text-[#4259A8]"
                             : "text-gray-600 hover:text-black"

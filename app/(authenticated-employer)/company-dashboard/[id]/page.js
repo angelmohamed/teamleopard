@@ -14,6 +14,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Badge } from "@/components/ui/badge";
 
 // We keep your param usage for job posting ID, but won't use it for fetching Employer info
 import { useParams } from "next/navigation";
@@ -68,35 +69,17 @@ export default function CompanyDashboard() {
   const [loading, setLoading] = useState(false);
 
   const [jobListings, setJobListings] = useState([]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchCompanyData = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("Employer")
-          .select("company_name, company_description")
-          .eq("id", user.id)
-          .single();
-
-        if (error) throw error;
-        setCompany(data);
-      } catch (err) {
-        console.error("Error fetching company data:", err.message);
-      }
-    };
-
-    fetchCompanyData();
-  }, [user]);
+  const [applications, setApplications] = useState([]);
+  const [loadingApplications, setLoadingApplications] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   const fetchJobListings = async () => {
-    if (!user) return;
+    if (!id) return;
 
     const { data, error } = await supabase
       .from("Job_Posting")
       .select("*")
-      .eq("company_ID", user.id)
+      .eq("company_ID", id)
       .order("posted_at", { ascending: false });
 
     if (error) {
@@ -119,12 +102,66 @@ export default function CompanyDashboard() {
     setJobListings(formatted);
   };
 
-  useEffect(() => {
-    if (user) {
-      console.log("👤 Logged-in user ID:", user.id);
-      fetchJobListings();
+  const fetchApplications = async () => {
+    const { data, error } = await supabase
+      .from('Applications')
+      .select(`
+        *,
+        Job_Posting!inner (
+          title,
+          description,
+          location,
+          employment_type,
+          salary_range
+        ),
+        Employee!inner (
+          first_name,
+          last_name,
+          email,
+          phone_num
+        )
+      `)
+      .eq('Job_Posting.company_ID', id);
+
+    if (error) {
+      console.error('Error fetching applications:', error);
+      return;
     }
-  }, [user]);
+
+    console.log('Fetched applications:', data?.length);
+    setApplications(data || []);
+    setLoadingApplications(false);
+  };
+
+  useEffect(() => {
+    if (id) {
+      console.log("👤 Company ID from URL:", id);
+      fetchJobListings();
+      fetchApplications();
+    }
+  }, [id]);
+
+  // Also update the company data fetch to use the id parameter
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchCompanyData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("Employer")
+          .select("company_name, company_description")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+        setCompany(data);
+      } catch (err) {
+        console.error("Error fetching company data:", err.message);
+      }
+    };
+
+    fetchCompanyData();
+  }, [id]);
 
   // Create a new job posting, referencing param-based "id"
   const handleSubmit = async (e) => {
@@ -164,7 +201,7 @@ export default function CompanyDashboard() {
           deadline,
           expected_skills: expectedSkills.trim(),
           status,
-          company_ID: user.id,
+          company_ID: id,
           posted_at: new Date().toISOString(),
         },
       ]);
@@ -200,13 +237,13 @@ export default function CompanyDashboard() {
   const [loadingNotis, setLoadingNotis] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!id) return;
     //fetch notification info
     const fetchNotifications = async () => {
       const { data, error } = await supabase
         .from("Notifications")
         .select(`*`)
-        .eq("employer_receiver_id", user.id)
+        .eq("employer_receiver_id", id)
         .eq("hidden", false) //hide hidden notis
         .order("created_at", { ascending: false }); //newest notis first
       //console.log("Notifications data:", data, "Error:", error);
@@ -217,7 +254,7 @@ export default function CompanyDashboard() {
     };
 
     fetchNotifications();
-  }, [user, notiLimit]); //run when user or limit changes
+  }, [id, notiLimit]); //run when user or limit changes
 
   // Published Date Formatting for notifications
   const formatDate = (isoString) => {
@@ -257,6 +294,32 @@ export default function CompanyDashboard() {
     "🔵 3 new applications received for Toilet Opener",
     "🔵 5 new applications received for Backend Engineer", 
   ];*/
+
+  // Add this new function to handle status updates
+  const handleStatusUpdate = async (applicationId, newStatus) => {
+    setUpdatingStatus(applicationId);
+    try {
+      const { error } = await supabase
+        .from('Applications')
+        .update({ status: newStatus })
+        .eq('Application_id', applicationId);
+
+      if (error) throw error;
+
+      // Update local state to reflect the change
+      setApplications(applications.map(app => 
+        app.Application_id === applicationId 
+          ? { ...app, status: newStatus }
+          : app
+      ));
+
+    } catch (error) {
+      console.error('Error updating application status:', error);
+      alert('Failed to update application status');
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
 
   // 5️⃣ If auth is loading or we haven't loaded company yet, show a fallback
   if (authLoading) return <p>Loading...</p>;
@@ -324,7 +387,7 @@ export default function CompanyDashboard() {
               <p className="mb-4">📊 Chart Goes Here</p>
               {jobListings.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  You haven’t posted any jobs yet.
+                  You haven't posted any jobs yet.
                 </p>
               ) : (
                 <div className="flex gap-4 overflow-x-auto pb-2">
@@ -355,6 +418,118 @@ export default function CompanyDashboard() {
                           </Link>
                         </div>
                       </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Add Applications section before Job Posting Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Applications</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingApplications ? (
+                <p className="text-muted-foreground">Loading applications...</p>
+              ) : applications.length === 0 ? (
+                <p className="text-center text-muted-foreground italic">
+                  No applications received yet.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {applications.map((app) => (
+                    <Card key={app.Application_id} className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <div>
+                            <h4 className="font-semibold text-lg">{app.Job_Posting.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {app.Job_Posting.location} • {app.Job_Posting.employment_type}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Salary Range: {app.Job_Posting.salary_range}
+                            </p>
+                          </div>
+                          <div className="pt-2">
+                            <h5 className="font-medium">Applicant Details</h5>
+                            <p className="text-sm">
+                              {app.Employee.first_name} {app.Employee.last_name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              📧 {app.Employee.email}
+                            </p>
+                            {app.Employee.phone_num && (
+                              <p className="text-sm text-muted-foreground">
+                                📱 {app.Employee.phone_num}
+                              </p>
+                            )}
+                          </div>
+                          <p className="text-sm">
+                            Applied: {new Date(app.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          {updatingStatus === app.Application_id ? (
+                            <div className="flex items-center">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              <select
+                                value={app.status || 'pending'}
+                                onChange={(e) => handleStatusUpdate(app.Application_id, e.target.value)}
+                                className={`p-1 rounded-md text-sm border ${
+                                  app.status === 'Accepted' ? 'bg-green-100 border-green-300' :
+                                  app.status === 'Rejected' ? 'bg-red-100 border-red-300' :
+                                  app.status === 'Interview Process' ? 'bg-blue-100 border-blue-300' :
+                                  'bg-gray-100 border-gray-300'
+                                }`}
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="Accepted">Accepted</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Interview Process">Interview Process</option>
+                              </select>
+                              <Badge
+                                variant={
+                                  app.status === 'Accepted' ? 'success' :
+                                  app.status === 'Rejected' ? 'destructive' :
+                                  app.status === 'Interview Process' ? 'default' :
+                                  'secondary'
+                                }
+                                className="ml-2"
+                              >
+                                {app.status || 'Pending'}
+                              </Badge>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {app.cover_letter && (
+                        <div className="mt-4">
+                          <p className="text-sm font-medium">Cover Letter:</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {app.cover_letter}
+                          </p>
+                        </div>
+                      )}
+                      {app.resume_file_name && (
+                        <div className="mt-2">
+                          <p className="text-sm">
+                            Resume: {app.resume_file_name}
+                          </p>
+                        </div>
+                      )}
+                      <div className="mt-4">
+                        <p className="text-sm font-medium">Job Description:</p>
+                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
+                          {app.Job_Posting.description ? 
+                            app.Job_Posting.description.replace(/<[^>]*>/g, '').replace(/\n/g, ', ') : 
+                            'No description available'}
+                        </p>
+                      </div>
                     </Card>
                   ))}
                 </div>

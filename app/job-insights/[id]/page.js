@@ -93,7 +93,9 @@ export default function JobDetailPage() {
           <CardTitle>Description</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-gray-800 whitespace-pre-wrap">
-          {job.description || "No description provided."}
+          {job.description ? 
+            job.description.replace(/<[^>]*>/g, '') : 
+            "No description provided."}
         </CardContent>
       </Card>
     </div>

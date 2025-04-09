@@ -150,16 +150,20 @@ export default function JobDetails() {
                 <PostedTimeDisplay published={job.posted_at.replace(" ", "T")} />
                 <h2 className="text-xl font-semibold mb-4">Job Description:</h2>
                 {/* Display formatted description */}
-                <div className="text-gray-700" dangerouslySetInnerHTML={{
-                     __html: job.description
-                     .replace(/class="ql-size-large"/g, 'class="text-2xl font-bold"')
-                }}/>
-                {/*The .replace converts quill css into tailwind*/}
+                <div className="text-gray-700 whitespace-pre-wrap">
+                  {job.description ? 
+                    job.description.replace(/<[^>]*>/g, '') : 
+                    'No description available'}
+                </div>
 
                 {job.expected_skills && (
                     <div className="mt-6">
                         <h3 className="font-semibold text-gray-700">Expected Skills:</h3>
-                        <p className="text-gray-600">{job.expected_skills}</p>
+                        <p className="text-gray-600">
+                            {typeof job.expected_skills === 'string' && job.expected_skills.startsWith('[') 
+                                ? JSON.parse(job.expected_skills).join(', ') 
+                                : job.expected_skills.replace(/<[^>]*>/g, '').replace(/\n/g, ', ')}
+                        </p>
                     </div>
                 )}
             </div>

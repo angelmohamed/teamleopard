@@ -229,7 +229,9 @@ export default function JobPostings({ onSavedJobsChange, filters }) {
 
                   <CardContent className="text-sm flex-grow">
                     <p className="text-gray-700 mb-2 line-clamp-3">
-                      {job.description}
+                      {job.description ? 
+                        job.description.replace(/<[^>]*>/g, '') : 
+                        'No description available'}
                     </p>
                     {/* Location & Employment Type */}
                     <div className="flex items-center gap-2 text-gray-500 text-sm">

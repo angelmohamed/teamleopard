@@ -8,12 +8,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Filter } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export default function JobListings() {
   const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [savedJobs, setSavedJobs] = useState([]);
   const [activeFilters, setActiveFilters] = useState({});
+  const [applications, setApplications] = useState([]);
+  const [loadingApplications, setLoadingApplications] = useState(true);
 
   // Fetch employee info
   useEffect(() => {
@@ -63,8 +67,50 @@ export default function JobListings() {
     setSavedJobs(validJobs);
   }, [user]);
 
+  // Fetch applications
+  const fetchApplications = React.useCallback(async () => {
+    if (!user) return;
+
+    setLoadingApplications(true);
+    
+    try {
+      // Fetch applications with job details
+      const { data, error } = await supabase
+        .from("Applications")
+        .select(`
+          Application_id, 
+          created_at, 
+          status,
+          resume_file_name,
+          job_posting_id,
+          Job_Posting (
+            posting_id, 
+            title, 
+            company_ID,
+            Employer (
+              company_name
+            )
+          )
+        `)
+        .eq("employee_ID", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5); // Limit to 5 most recent applications
+
+      if (error) {
+        console.error("Error fetching applications:", error);
+      } else {
+        setApplications(data || []);
+      }
+    } catch (err) {
+      console.error("Unexpected error in fetchApplications:", err);
+    } finally {
+      setLoadingApplications(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchSavedJobs();
+    fetchApplications();
 
     const subscription = supabase
       .channel("saved_jobs_changes")
@@ -80,7 +126,7 @@ export default function JobListings() {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [fetchSavedJobs, user]);
+  }, [fetchSavedJobs, fetchApplications, user]);
 
   const handleSavedJobsChange = async () => {
     await fetchSavedJobs();
@@ -88,6 +134,29 @@ export default function JobListings() {
 
   const handleFilterChange = (filters) => {
     setActiveFilters(filters);
+  };
+
+  // Helper to format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  // Get badge color based on status
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      "pending": "bg-yellow-100 text-yellow-800",
+      "reviewed": "bg-blue-100 text-blue-800",
+      "interview": "bg-purple-100 text-purple-800",
+      "rejected": "bg-red-100 text-red-800",
+      "accepted": "bg-green-100 text-green-800"
+    };
+    
+    return statusMap[status?.toLowerCase()] || "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -185,10 +254,45 @@ export default function JobListings() {
             {/* Applications */}
             <Card>
               <CardHeader>
-                <CardTitle>Your applications</CardTitle>
+                <Link href="/applications" className="hover:underline">
+                  <CardTitle>Your applications</CardTitle>
+                </Link>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm">Placeholder</p>
+              <CardContent className="max-h-64 overflow-y-auto pr-1">
+                {loadingApplications ? (
+                  <p className="text-sm text-gray-600">Loading applications...</p>
+                ) : applications.length === 0 ? (
+                  <p className="text-sm text-gray-600">No applications yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {applications.slice(0, 5).map((application) => (
+                      <div key={application.Application_id} className="border-b pb-3 last:border-b-0 last:pb-0">
+                        <div className="flex justify-between items-start">
+                          <a
+                            href={`/dashboard/listing/${application.job_posting_id}`}
+                            className="hover:underline text-sm text-gray-800 font-medium"
+                          >
+                            {application.Job_Posting?.title || "Job Unavailable"}
+                          </a>
+                          <Badge className={`${getStatusBadge(application.status)} text-xs uppercase hover:no-underline hover:bg-opacity-100 hover:shadow-none`}>
+                            {application.status || "Pending"}
+                          </Badge>
+                        </div>
+                        <p className="text-gray-600 text-sm mt-1">
+                          {application.Job_Posting?.Employer?.company_name || "Unknown Company"}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          Applied on {formatDate(application.created_at)}
+                        </p>
+                      </div>
+                    ))}
+                    <div className="mt-4 text-center">
+                      <Link href="/applications" className="text-blue-600 hover:underline text-sm">
+                        View all applications
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

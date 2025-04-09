@@ -84,7 +84,7 @@ export default function CompanySignup() {
           employer_receiver_id: userId,
           title: "👋",
           content: "Welcome to Connect.",
-          link: "/company-dashboard",
+          link: `/company-dashboard/${userId}`,
         },
       ]);
       if (notiError) console.log("Notification error: ", notiError);

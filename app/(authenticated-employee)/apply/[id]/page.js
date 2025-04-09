@@ -247,7 +247,7 @@ export default function ApplicationForm() {
         employer_receiver_id: job.company_ID,
         title: "🟢",
         content: employee.first_name + " has applied for " + job.title + ".",
-        link: "/company-dashboard", //can be a profile page if possible
+        link: `/company-dashboard/${job.company_ID}`,
       },
     ]);
     if (notiError2) console.log("Notification error: ", notiError2);
@@ -309,6 +309,13 @@ export default function ApplicationForm() {
                   Salary: {job.salary_range}
                 </div>
               )}
+              {job.expected_skills && (
+                <div className="flex items-center gap-2 border px-3 py-1 rounded-full text-sm text-gray-700 mb-1">
+                  <span>Skills: {typeof job.expected_skills === 'string' && job.expected_skills.startsWith('[') 
+                    ? JSON.parse(job.expected_skills).join(', ') 
+                    : job.expected_skills.replace(/<[^>]*>/g, '').replace(/\n/g, ', ')}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 px-3 py-1 text-sm text-black font-bold">
                 {job.company_name}
               </div>
@@ -326,13 +333,20 @@ export default function ApplicationForm() {
             >
               <CheckCircle className="w-10 h-10 text-green-500 mb-2" />
               Your application has been submitted successfully!
-              <Link
-                href={`/dashboard`}
-                className="underline text-sm mt-2 text-gray-800"
-              >
-                Return to dashboard.
-              </Link>
-              {/* maybe a link to the application? */}
+              <div className="flex flex-col items-center gap-2 mt-4">
+                <Link
+                  href={`/applications`}
+                  className="text-blue-600 hover:underline"
+                >
+                  View your applications
+                </Link>
+                <Link
+                  href={`/dashboard`}
+                  className="text-sm text-gray-600 hover:underline"
+                >
+                  Return to dashboard
+                </Link>
+              </div>
             </motion.div>
           ) : coverLetterEditor ? (
             <div className="flex flex-col items-center gap-2 border border-gray-300 rounded-lg p-4 bg-gray-100 flex-1">

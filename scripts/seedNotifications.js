@@ -70,15 +70,13 @@ async function seedNotifications() {
       created_at: new Date(),
       title: faker.helpers.arrayElement(["📬", "📅", "🔔", "📈", "📢"]),
       content: faker.helpers.arrayElement([
-        `${faker.person.firstName()} just applied to ${
-          faker.helpers.arrayElement(jobs).title
-        }.`,
+        `${faker.number.int({ min: 1, max: 5 })} new applications received.`,
         `Interview scheduled with ${faker.person.firstName()}.`,
         `Job posting update: ${faker.helpers.arrayElement(jobs).title}.`,
         `Reminder: deadline approaching.`,
         `New applicant insights available.`,
       ]),
-      link: "/company-dashboard",
+      link: `/company-dashboard/${employerId}`,
       read: false,
       hidden: false,
     }))

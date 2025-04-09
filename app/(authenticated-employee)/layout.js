@@ -51,7 +51,7 @@ export function useAuth() {
         .single();
 
       if (employerData && !employerError) {
-        router.replace("/company-dashboard");
+        router.replace(`/company-dashboard/${userId}`);
         return;
       }
 

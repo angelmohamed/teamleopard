@@ -91,7 +91,7 @@ export default function Login() {
         console.log("✅ Employer login successful.");
         sessionStorage.setItem("userId", userId);
         sessionStorage.setItem("role", "Employer");
-        router.push("/company-dashboard/");
+        router.push(`/company-dashboard/${userId}`);
       } else {
         throw new Error("User profile not found.");
       }
