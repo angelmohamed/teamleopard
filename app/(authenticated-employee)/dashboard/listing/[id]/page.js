@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -40,7 +40,7 @@ export default function JobDetails() {
                     .select("*")
                     .eq("employee_ID", authData.user.id)
                     .eq("job_posting_id", id)
-                    .maybeSingle();
+                    .single()
 
                 if (!savedErr && saved) setIsSaved(true);
             }
@@ -132,12 +132,14 @@ export default function JobDetails() {
             <div className="flex items-center gap-2 pt-6">
                 <button
                     onClick={handleFavourite}
+                    aria-label="Favourite"
                     className={`w-9 h-9 flex items-center justify-center rounded-md transition border ${isSaved ? "text-red-500 bg-red-100 border-red-200" : "text-gray-600 hover:text-red-500 border-gray-300"}`}
                 >
                     <FolderHeart size={20} />
                 </button>
                 <button
                     onClick={handleShare}
+                    aria-label="Share"
                     className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:text-blue-600"
                 >
                     <Share2 size={20} />

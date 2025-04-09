@@ -8,4 +8,10 @@ module.exports = {
     collectCoverage: true,
     collectCoverageFrom: ["**/*.{js,jsx}", "!**/node_modules/**", "!**/.next/**"],
     coverageReporters: ["html", "text"],
+    transform: {
+      "^.+\\.[jt]sx?$": "babel-jest"
+    },
+    transformIgnorePatterns: [
+      "/node_modules/(?!next|@babel|lucide-react)"
+    ]
   };
