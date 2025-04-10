@@ -24,4 +24,4 @@ Major libraries/services used in this project:
 - Lucide React Icons - [https://lucide.dev/icons/](https://lucide.dev/icons/).
 
 ## Deployed version of the application
-The deployed version of the application can be found at [*FILL*](https://google.com).
+The deployed version of the application can be found at [https://teamleopard-uic6.vercel.app/](https://teamleopard-uic6.vercel.app/).
