@@ -13,8 +13,6 @@ export default function JobDetailPage() {
 
   // Fetch job data
   useEffect(() => {
-    if (!id) return
-
     const postId = Number(id)
     if (isNaN(postId)) {
       setError("Invalid job ID")
@@ -44,8 +42,6 @@ export default function JobDetailPage() {
 
   // Increment views
   useEffect(() => {
-    if (!id) return
-
     fetch("/api/view-job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
