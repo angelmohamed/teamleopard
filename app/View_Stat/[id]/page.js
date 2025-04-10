@@ -44,41 +44,45 @@ export default async function ViewStatPage({ params }) {
 
       {/* Status Breakdown Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium flex items-center gap-2 text-green-600">
-              <CheckCircle className="w-5 h-5" /> Accepted
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-foreground">{accepted}</p>
-            <p className="text-sm text-muted-foreground">Applications accepted</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium flex items-center gap-2 text-red-600">
-              <XCircle className="w-5 h-5" /> Rejected
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-foreground">{rejected}</p>
-            <p className="text-sm text-muted-foreground">Applications rejected</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium flex items-center gap-2 text-yellow-600">
-              <Clock className="w-5 h-5" /> Pending
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-foreground">{pending}</p>
-            <p className="text-sm text-muted-foreground">Applications pending</p>
-          </CardContent>
-        </Card>
+        <div data-testid="card-accepted"> {/*for testing*/}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-medium flex items-center gap-2 text-green-600">
+                <CheckCircle className="w-5 h-5" /> Accepted
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-foreground">{accepted}</p>
+              <p className="text-sm text-muted-foreground">Applications accepted</p>
+            </CardContent>
+          </Card>
+        </div>
+        <div data-testid="card-rejected"> {/*for testing*/}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-medium flex items-center gap-2 text-red-600">
+                <XCircle className="w-5 h-5" /> Rejected
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-foreground">{rejected}</p>
+              <p className="text-sm text-muted-foreground">Applications rejected</p>
+            </CardContent>
+          </Card>
+        </div>
+        <div data-testid="card-pending"> {/*for testing*/}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-medium flex items-center gap-2 text-yellow-600">
+                <Clock className="w-5 h-5" /> Pending
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-foreground">{pending}</p>
+              <p className="text-sm text-muted-foreground">Applications pending</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Bar Chart */}

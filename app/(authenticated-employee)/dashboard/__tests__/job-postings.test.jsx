@@ -17,7 +17,6 @@ beforeEach(() => {
 });
 
 // Helper function to return an object that is fully chainable for a query.
-// It supports select, limit, eq, and then methods.
 const createChainable = (data) => {
   const chainable = {
     select: jest.fn(() => chainable),
