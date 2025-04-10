@@ -135,6 +135,19 @@ export default function EditProfile() {
     if (error) {
       alert("Upload failed: " + error.message);
     } else {
+      //update in table
+      const { error } = await supabase
+        .from("CVs")
+        .upsert(
+          { employee_id: user.id, file_name: file.name },
+          { onConflict: "employee_id" }
+        );
+
+      if (error) {
+        console.error("Error upserting CV file name:", error);
+        return;
+      }
+
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from("cv-uploads")
         .createSignedUrl(filePath, 60 * 60);
