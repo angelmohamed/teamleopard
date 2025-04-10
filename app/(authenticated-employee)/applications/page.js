@@ -160,7 +160,7 @@ export default function ApplicationsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">You haven't applied to any jobs yet.</p>
+              <p className="text-gray-500 mb-4">You haven&apost applied to any jobs yet.</p>
               <Link 
                 href="/dashboard" 
                 className="text-blue-600 hover:underline"

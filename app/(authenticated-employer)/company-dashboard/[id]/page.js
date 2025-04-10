@@ -387,7 +387,7 @@ export default function CompanyDashboard() {
               <p className="mb-4">📊 Chart Goes Here</p>
               {jobListings.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  You haven't posted any jobs yet.
+                  You haven&apos;t posted any jobs yet.
                 </p>
               ) : (
                 <div className="flex gap-4 overflow-x-auto pb-2">
