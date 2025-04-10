@@ -114,7 +114,7 @@ describe('ApplicationsPage', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("You haven't applied to any jobs yet.")).toBeInTheDocument();
+      expect(screen.getByText("You haven&apost applied to any jobs yet.")).toBeInTheDocument();
       expect(screen.getByText("Browse jobs to apply")).toBeInTheDocument();
     });
   });
@@ -202,7 +202,7 @@ describe('ApplicationsPage', () => {
 
     await waitFor(() => {
       expect(console.error).toHaveBeenCalledWith('Error fetching applications:', { message: 'Database error' });
-      expect(screen.getByText("You haven't applied to any jobs yet.")).toBeInTheDocument();
+      expect(screen.getByText("You haven&apost applied to any jobs yet.")).toBeInTheDocument();
     });
   });
 

@@ -74,6 +74,7 @@ export default function HomePage() {
         <div className="w-full md:w-1/2 flex flex-col items-center justify-center text-center md:text-right gap-6 px-4 md:px-0">
           <Image
             src="/logo_big.png"
+            alt=""
             width={420}
             height={120}
             layout="responsive"
@@ -98,25 +99,25 @@ export default function HomePage() {
               {/* LIST OF IMAGES OF THE APP */}
               {/* TBC - make sure all images are the same proportions. the carousell will adjust based on the largest image's dimensions. */}
               <CarouselItem>
-                <img
+                <Image
                   src="showcase_1.png"
                   alt="Example"
                   className="rounded-lg shadow-lg w-full h-auto"
-                ></img>
+                ></Image>
               </CarouselItem>
               <CarouselItem>
-                <img
+                <Image
                   src="showcase_2.png"
                   alt="Example"
                   className="rounded-lg shadow-lg w-full h-auto"
-                ></img>
+                ></Image>
               </CarouselItem>
               <CarouselItem>
-                <img
+                <Image
                   src="showcase_3.png"
                   alt="Example"
                   className="rounded-lg shadow-lg w-full h-auto"
-                ></img>
+                ></Image>
               </CarouselItem>
             </CarouselContent>
             <CarouselPrevious className="bg-slate-500 absolute left-2" />
@@ -166,14 +167,14 @@ export default function HomePage() {
                     a range of options to your liking.
                     <br/><br/>
                     With an account on Connect, employers are able to discover your skills.
-                    If you're unsure exactly where you want life to take you, let the
+                    If you&apos;re unsure exactly where you want life to take you, let the
                     career you never knew you needed find you instead.
                     <br/><br/>
                     Applying has never been easier with everything in one place. Explore
                     open listings, apply within minutes, and track pending applications
                     all without even leaving the website.
                     <br/><br/>
-                    Connect is free and open to anyone - whether it's your first internship
+                    Connect is free and open to anyone - whether it&apos;s your first internship
                     or your final stop. Sign up now to find that next step.
                   </p>
                 </CardContent>
@@ -203,11 +204,11 @@ export default function HomePage() {
                     your firm needs. Connect ensures that your positions will be found by
                     those most suitable for it.
                     <br/><br/>
-                    With a simple, user-friendly application process, you'll receive
-                    more than enough interest in your positions. Of course, we'll help you
+                    With a simple, user-friendly application process, you&apos;ll receive
+                    more than enough interest in your positions. Of course, we&apos;ll help you
                     efficiently filter out the ones you need most.
                     <br/><br/>
-                    On the dashboard, you'll have access to advanced analytics for your listings,
+                    On the dashboard, you&apos;ll have access to advanced analytics for your listings,
                     granting you the information needed to refine your advertising and
                     grow your business faster than ever.
                     <br/><br/>
