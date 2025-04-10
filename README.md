@@ -5,7 +5,7 @@ The members of the team are:
 - Angel Mohamed
 - Daniel Tierney
 - Fouad Al Baayno
-- Joel Lim
+- Jia Lim
 - John Paul San Diego
 - Juri Alaskar
 - Nourah Al Hassan
